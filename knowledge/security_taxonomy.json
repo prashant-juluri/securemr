@@ -1,0 +1,163 @@
+{
+  "sql-injection": {
+    "name": "SQL Injection",
+    "cwe": "CWE-89",
+    "owasp": "A03:2021 Injection",
+    "category": "Injection",
+    "risk_weight": 9,
+    "description": "User-controlled input is used to construct SQL queries without proper sanitization."
+  },
+
+  "command-injection": {
+    "name": "Command Injection",
+    "cwe": "CWE-78",
+    "owasp": "A03:2021 Injection",
+    "category": "Injection",
+    "risk_weight": 9,
+    "description": "User input is used to construct system commands executed by the operating system."
+  },
+
+  "ldap-injection": {
+    "name": "LDAP Injection",
+    "cwe": "CWE-90",
+    "owasp": "A03:2021 Injection",
+    "category": "Injection",
+    "risk_weight": 8,
+    "description": "Unsanitized input is used to build LDAP queries."
+  },
+
+  "xss": {
+    "name": "Cross-Site Scripting",
+    "cwe": "CWE-79",
+    "owasp": "A03:2021 Injection",
+    "category": "Injection",
+    "risk_weight": 7,
+    "description": "Untrusted input is rendered in web pages allowing execution of malicious scripts."
+  },
+
+  "path-traversal": {
+    "name": "Path Traversal",
+    "cwe": "CWE-22",
+    "owasp": "A05:2021 Security Misconfiguration",
+    "category": "File Access",
+    "risk_weight": 7,
+    "description": "User-controlled input allows access to files outside the intended directory."
+  },
+
+  "insecure-deserialization": {
+    "name": "Insecure Deserialization",
+    "cwe": "CWE-502",
+    "owasp": "A08:2021 Software and Data Integrity Failures",
+    "category": "Data Integrity",
+    "risk_weight": 8,
+    "description": "Deserializing untrusted data may allow remote code execution."
+  },
+
+  "hardcoded-secret": {
+    "name": "Hardcoded Secret",
+    "cwe": "CWE-798",
+    "owasp": "A02:2021 Cryptographic Failures",
+    "category": "Secrets Management",
+    "risk_weight": 8,
+    "description": "Sensitive credentials such as passwords or API keys are embedded directly in code."
+  },
+
+  "weak-crypto": {
+    "name": "Weak Cryptography",
+    "cwe": "CWE-327",
+    "owasp": "A02:2021 Cryptographic Failures",
+    "category": "Cryptography",
+    "risk_weight": 7,
+    "description": "Weak or outdated cryptographic algorithms are used."
+  },
+
+  "insufficient-randomness": {
+    "name": "Insufficient Randomness",
+    "cwe": "CWE-330",
+    "owasp": "A02:2021 Cryptographic Failures",
+    "category": "Cryptography",
+    "risk_weight": 6,
+    "description": "Predictable random values are used for security-sensitive operations."
+  },
+
+  "open-redirect": {
+    "name": "Open Redirect",
+    "cwe": "CWE-601",
+    "owasp": "A10:2021 Server-Side Request Forgery",
+    "category": "Web Security",
+    "risk_weight": 5,
+    "description": "Application redirects users to untrusted external URLs."
+  },
+
+  "ssrf": {
+    "name": "Server-Side Request Forgery",
+    "cwe": "CWE-918",
+    "owasp": "A10:2021 Server-Side Request Forgery",
+    "category": "Network Security",
+    "risk_weight": 8,
+    "description": "Server-side requests can be manipulated to access internal resources."
+  },
+
+  "improper-authentication": {
+    "name": "Improper Authentication",
+    "cwe": "CWE-287",
+    "owasp": "A07:2021 Identification and Authentication Failures",
+    "category": "Authentication",
+    "risk_weight": 7,
+    "description": "Authentication mechanisms fail to correctly verify user identity."
+  },
+
+  "broken-access-control": {
+    "name": "Broken Access Control",
+    "cwe": "CWE-284",
+    "owasp": "A01:2021 Broken Access Control",
+    "category": "Authorization",
+    "risk_weight": 9,
+    "description": "Improper enforcement of access restrictions."
+  },
+
+  "csrf": {
+    "name": "Cross-Site Request Forgery",
+    "cwe": "CWE-352",
+    "owasp": "A01:2021 Broken Access Control",
+    "category": "Web Security",
+    "risk_weight": 6,
+    "description": "Unauthorized commands are transmitted from a user that the application trusts."
+  },
+
+  "insecure-file-upload": {
+    "name": "Insecure File Upload",
+    "cwe": "CWE-434",
+    "owasp": "A05:2021 Security Misconfiguration",
+    "category": "File Handling",
+    "risk_weight": 7,
+    "description": "Application allows uploading of files that may execute malicious code."
+  },
+
+  "xml-external-entity": {
+    "name": "XML External Entity",
+    "cwe": "CWE-611",
+    "owasp": "A05:2021 Security Misconfiguration",
+    "category": "XML Processing",
+    "risk_weight": 7,
+    "description": "XML parsers allow external entity expansion leading to data exfiltration."
+  },
+
+  "unsafe-eval": {
+    "name": "Unsafe Dynamic Evaluation",
+    "cwe": "CWE-94",
+    "owasp": "A03:2021 Injection",
+    "category": "Code Execution",
+    "risk_weight": 9,
+    "description": "Dynamic code execution using untrusted input."
+  },
+
+  "debug-enabled": {
+    "name": "Debug Mode Enabled",
+    "cwe": "CWE-489",
+    "owasp": "A05:2021 Security Misconfiguration",
+    "category": "Configuration",
+    "risk_weight": 4,
+    "description": "Application runs with debugging features enabled in production."
+  }
+}

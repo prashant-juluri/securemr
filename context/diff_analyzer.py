@@ -4,77 +4,53 @@ import subprocess
 
 def get_changed_files():
     """
-    Determine which files were changed in the current branch / PR / MR.
-
-    Supports:
-    - GitHub Actions
-    - GitLab CI
-    - Local development
+    Determine files changed in the current branch/PR/MR.
+    Works across GitHub Actions, GitLab CI, and local environments.
     """
 
-    base = None
-
-    # GitHub Actions
     github_base = os.getenv("GITHUB_BASE_REF")
+    gitlab_base = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")
+
     if github_base:
         base = f"origin/{github_base}"
+        print(f"[SecureMR] GitHub PR detected. Diff base: {base}")
 
-    # GitLab CI
-    gitlab_base = os.getenv("CI_MERGE_REQUEST_TARGET_BRANCH_NAME")
-    if gitlab_base:
+    elif gitlab_base:
         base = f"origin/{gitlab_base}"
+        print(f"[SecureMR] GitLab MR detected. Diff base: {base}")
 
-    # Local fallback
-    if base is None:
-        base = "origin/main"
+    else:
+        try:
+            base = subprocess.check_output(
+                ["git", "merge-base", "HEAD", "origin/main"],
+                text=True
+            ).strip()
 
-    print(f"[SecureMR] Using diff base: {base}")
+            print(f"[SecureMR] Using merge-base fallback: {base}")
 
-    try:
-        result = subprocess.run(
-            ["git", "diff", "--name-only", base],
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        except Exception:
+            base = "HEAD"
+            print("[SecureMR] Unable to determine merge-base. Using HEAD.")
 
-        files = result.stdout.strip().split("\n")
+    result = subprocess.run(
+        ["git", "diff", "--name-only", base],
+        capture_output=True,
+        text=True
+    )
 
-        return [normalize_path(f) for f in files if f]
+    files = result.stdout.strip().split("\n")
 
-    except subprocess.CalledProcessError:
-
-        print("[SecureMR] Unable to diff against base branch. Falling back to local diff.")
-
-        result = subprocess.run(
-            ["git", "diff", "--name-only"],
-            capture_output=True,
-            text=True
-        )
-
-        files = result.stdout.strip().split("\n")
-
-        return [normalize_path(f) for f in files if f]
+    return [normalize_path(f) for f in files if f]
 
 
 def normalize_path(path):
-    """
-    Normalize file paths so comparisons work reliably.
-    """
-
     return os.path.normpath(path)
 
 
 def tag_new_findings(findings, changed_files):
-    """
-    Mark findings that occur in files modified in the current change.
-    """
 
-    changed_set = set(normalize_path(f) for f in changed_files)
+    changed = set(normalize_path(f) for f in changed_files)
 
     for finding in findings:
-
-        file_path = normalize_path(finding.file)
-
-        if file_path in changed_set:
+        if normalize_path(finding.file) in changed:
             finding.new_issue = True

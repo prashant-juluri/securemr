@@ -55,12 +55,14 @@ def parse_semgrep(file_path):
         snippet = snippet.strip()
 
         finding = Finding(
-            file=file,
-            line=line,
-            rule=rule,
-            severity=severity,
-            snippet=snippet
-        )
+                    file=file,
+                    line=line,
+                    rule=rule,
+                    severity=severity,
+                    snippet=snippet
+                        )
+
+        finding.raw = r
 
         findings.append(finding)
 

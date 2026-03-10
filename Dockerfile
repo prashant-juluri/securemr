@@ -5,13 +5,16 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
 
-# Copy project
+# Fix git safe directory issue in CI containers
+RUN git config --global --add safe.directory /app
+
+# Copy project files
 COPY . .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Semgrep
+# Install semgrep
 RUN pip install semgrep
 
 # Default command

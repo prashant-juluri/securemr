@@ -1,21 +1,33 @@
-name: SecureMR
+name: SecureMR Security Scan
 
 on:
   pull_request:
+    branches:
+      - main
 
 jobs:
-  scan:
+  securemr:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      pull-requests: write
+
     steps:
-      - uses: actions/checkout@v4
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build SecureMR container
+        run: |
+          docker build -t securemr .
 
       - name: Run SecureMR
         run: |
-          docker build -t securemr .
           docker run \
             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             -e GITHUB_REPOSITORY=${{ github.repository }} \
             -e GITHUB_EVENT_PATH=${{ github.event_path }} \
+            -v ${{ github.workspace }}:/app \
             securemr

@@ -1,6 +1,8 @@
 import sys
 
+from scanners.semgrep_runner import run_semgrep
 from scanners.semgrep_parser import parse_semgrep
+
 from context.diff_analyzer import get_changed_files, tag_new_findings
 
 from knowledge.vulnerability_db import enrich_findings
@@ -15,9 +17,6 @@ from ai.review_aggregator import ReviewAggregator
 from reporters.reporter_factory import ReporterFactory
 
 from config import OPENAI_API_KEY
-
-
-SEMGREP_RESULTS_PATH = "sample_findings/semgrep.json"
 
 
 def initialize_ai_pipeline():
@@ -36,9 +35,11 @@ def initialize_ai_pipeline():
 
 def load_findings():
 
-    print("[SecureMR] Parsing scanner findings")
+    print("[SecureMR] Running Semgrep scan")
 
-    findings = parse_semgrep(SEMGREP_RESULTS_PATH)
+    semgrep_results = run_semgrep()
+
+    findings = parse_semgrep(semgrep_results)
 
     if not findings:
         print("[SecureMR] No findings detected")

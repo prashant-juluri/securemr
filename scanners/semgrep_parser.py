@@ -1,68 +1,38 @@
-import json
 from models import Finding
 
 
-def normalize_severity(severity):
-
-    mapping = {
-        "ERROR": "HIGH",
-        "WARNING": "MEDIUM",
-        "INFO": "LOW"
-    }
-
-    return mapping.get(severity, "MEDIUM")
-
-
-def parse_semgrep(file_path):
+def parse_semgrep(data):
 
     findings = []
-
-    try:
-        with open(file_path, "r") as f:
-
-            content = f.read().strip()
-
-            if not content:
-                print("Semgrep output is empty.")
-                return findings
-
-            data = json.loads(content)
-
-    except FileNotFoundError:
-        print(f"Semgrep file not found: {file_path}")
-        return findings
-
-    except json.JSONDecodeError:
-        print("Invalid JSON in Semgrep output.")
-        return findings
-
 
     results = data.get("results", [])
 
     for r in results:
 
-        file = r.get("path")
-        rule = r.get("check_id")
+        rule = r.get("check_id", "")
+        path = r.get("path", "")
 
-        line = r.get("start", {}).get("line", 0)
+        start = r.get("start", {})
+        line = start.get("line", 0)
 
-        raw_severity = r.get("extra", {}).get("severity", "WARNING")
+        extra = r.get("extra", {})
+        severity = extra.get("severity", "")
 
-        severity = normalize_severity(raw_severity)
+        metadata = extra.get("metadata", {})
 
-        snippet = r.get("extra", {}).get("lines") or ""
-
-        snippet = snippet.strip()
+        cwe = ""
+        if "cwe" in metadata:
+            cwe_data = metadata["cwe"]
+            if isinstance(cwe_data, list) and len(cwe_data) > 0:
+                cwe = cwe_data[0]
 
         finding = Finding(
-                    file=file,
-                    line=line,
-                    rule=rule,
-                    severity=severity,
-                    snippet=snippet
-                        )
-
-        finding.raw = r
+            file=path,
+            line=line,
+            rule=rule,
+            severity=severity,
+            cwe=cwe
+        )
 
         findings.append(finding)
 

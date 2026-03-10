@@ -1,0 +1,7 @@
+import os
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+GITLAB_TOKEN = os.getenv("GITLAB_TOKEN")
+GITLAB_PROJECT_ID = os.getenv("CI_PROJECT_ID")
+GITLAB_MR_IID = os.getenv("CI_MERGE_REQUEST_IID")

@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "check_id": "python.lang.security.sql-injection",
+      "path": "api/search.py",
+      "start": {
+        "line": 42
+      },
+      "extra": {
+        "severity": "ERROR",
+        "lines": "cursor.execute(\"SELECT * FROM users WHERE id=\" + user_id)"
+      }
+    }
+  ]
+}

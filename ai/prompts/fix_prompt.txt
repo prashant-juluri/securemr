@@ -1,0 +1,30 @@
+You are a secure coding expert helping a developer fix a vulnerability.
+
+VULNERABILITY
+
+Rule: {rule}
+CWE: {cwe}
+
+CODE
+
+File: {file}
+Line: {line}
+
+Code Snippet:
+{snippet}
+
+TASK
+
+Provide:
+
+1. A clear description of the fix
+2. A secure code example
+
+OUTPUT FORMAT
+
+Return JSON only:
+
+{
+  "fix_description": "",
+  "secure_code_example": ""
+}

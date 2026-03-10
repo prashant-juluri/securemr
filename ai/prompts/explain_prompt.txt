@@ -1,0 +1,35 @@
+You are a senior application security engineer reviewing a code change.
+
+VULNERABILITY
+
+Rule: {rule}
+Severity: {severity}
+CWE: {cwe}
+OWASP Category: {owasp}
+
+CODE CONTEXT
+
+File: {file}
+Line: {line}
+
+Code Snippet:
+{snippet}
+
+TASK
+
+Explain the vulnerability clearly for a developer.
+
+Focus on:
+1. What the vulnerability is
+2. Why the code is vulnerable
+3. How an attacker could exploit it
+
+OUTPUT FORMAT
+
+Return JSON only:
+
+{
+  "vulnerability_type": "",
+  "explanation": "",
+  "exploit_scenario": ""
+}

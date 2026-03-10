@@ -1,6 +1,18 @@
-.env
+# Python
 __pycache__/
 *.pyc
-*.log
-*.DS_Store
+*.pyo
+*.pyd
+
+# Virtual env
 venv/
+.env
+
+# MacOS
+.DS_Store
+
+# Docker
+.dockerignore
+
+# test artifacts
+.test/

@@ -4,6 +4,9 @@ import os
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-GITLAB_TOKEN = os.getenv("GITLAB_TOKEN")
-GITLAB_PROJECT_ID = os.getenv("CI_PROJECT_ID")
-GITLAB_MR_IID = os.getenv("CI_MERGE_REQUEST_IID")
+
+AI_MODELS = {
+    "explain": os.getenv("AI_MODEL_EXPLAIN", "gpt-4o"),
+    "risk": os.getenv("AI_MODEL_RISK", "gpt-4o-mini"),
+    "fix": os.getenv("AI_MODEL_FIX", "gpt-4o")
+}

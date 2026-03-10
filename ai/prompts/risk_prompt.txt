@@ -1,0 +1,34 @@
+You are performing security risk triage for a vulnerability detected in a pull request.
+
+VULNERABILITY CONTEXT
+
+Rule: {rule}
+Severity: {severity}
+CWE: {cwe}
+OWASP Category: {owasp}
+
+CHANGE CONTEXT
+
+Introduced in this PR: {new_issue}
+
+EXPLANATION
+
+{explanation}
+
+TASK
+
+Evaluate the security risk.
+
+Consider:
+- exploitability
+- data exposure potential
+- impact on system integrity
+
+OUTPUT FORMAT
+
+Return JSON only:
+
+{
+  "risk_level": "",
+  "risk_reasoning": ""
+}

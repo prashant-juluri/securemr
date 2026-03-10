@@ -1,0 +1,14 @@
+securemr:
+  image: docker:latest
+  services:
+    - docker:dind
+
+  script:
+    - docker build -t securemr .
+    - docker run
+        -e OPENAI_API_KEY=$OPENAI_API_KEY
+        -e GITLAB_TOKEN=$GITLAB_TOKEN
+        -e CI_PROJECT_ID=$CI_PROJECT_ID
+        -e CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID
+        -e CI_API_V4_URL=$CI_API_V4_URL
+        securemr

@@ -1,0 +1,11 @@
+{
+  "type": "object",
+  "properties": {
+    "fix_description": { "type": "string" },
+    "secure_code_example": { "type": "string" }
+  },
+  "required": [
+    "fix_description",
+    "secure_code_example"
+  ]
+}

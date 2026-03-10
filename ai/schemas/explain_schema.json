@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "vulnerability_type": { "type": "string" },
+    "explanation": { "type": "string" },
+    "exploit_scenario": { "type": "string" }
+  },
+  "required": [
+    "vulnerability_type",
+    "explanation",
+    "exploit_scenario"
+  ]
+}

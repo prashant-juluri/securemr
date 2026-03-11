@@ -24,28 +24,21 @@ class GitlabReporter:
             "Content-Type": "application/json"
         }
 
+        # Convert report to string if needed
+        if not isinstance(report, str):
+            report = str(report)
+
         payload = {
             "body": report
         }
 
-        try:
+        response = requests.post(url, headers=headers, json=payload)
 
-            response = requests.post(
-                url,
-                headers=headers,
-                json=payload,
-                timeout=10
+        if response.status_code == 201:
+            print("[SecureMR] Comment posted to GitLab MR")
+        else:
+            print(
+                "[SecureMR] Failed to post GitLab comment:",
+                response.status_code,
+                response.text
             )
-
-            if response.status_code == 201:
-                print("[SecureMR] Comment posted to GitLab MR")
-
-            else:
-                print(
-                    "[SecureMR] Failed to post GitLab comment:",
-                    response.status_code,
-                    response.text
-                )
-
-        except requests.exceptions.RequestException as e:
-            print("[SecureMR] GitLab API request failed:", str(e))

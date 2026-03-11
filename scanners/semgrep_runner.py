@@ -10,13 +10,14 @@ def run_semgrep(target_path="."):
     output_path = tmp_file.name
 
     cmd = [
-    "semgrep",
-    "--config=p/security-audit",
-    "--no-git-ignore",
-    target_path,
-    "--json",
-    "--output",
-    output_path
+        "semgrep",
+        "--config=p/owasp-top-ten",
+        "--no-git-ignore",
+        "--metrics=off",
+        target_path,
+        "--json",
+        "--output",
+        output_path
     ]
 
     print(f"[SecureMR] Executing Semgrep on {target_path}")

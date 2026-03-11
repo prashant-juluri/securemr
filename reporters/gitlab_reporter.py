@@ -10,7 +10,7 @@ class GitlabReporter:
         self.mr_iid = mr_iid
         self.api_url = api_url
 
-    def format_report(report):
+    def format_report(self, report):
 
         lines = []
         lines.append("## 🔒 SecureMR Security Report\n")

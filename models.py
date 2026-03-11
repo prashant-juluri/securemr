@@ -7,7 +7,8 @@ class Finding:
         message,
         severity,
         line,
-        cwe=None
+        cwe=None,
+        snippet=None
     ):
 
         # Canonical fields
@@ -17,6 +18,9 @@ class Finding:
         self.severity = severity
         self.line = line
         self.cwe = cwe
+
+        # New field required by AI agents
+        self.snippet = snippet
 
         # Backwards compatibility aliases
         self.file = file_path
@@ -38,6 +42,7 @@ class Finding:
             "severity": self.severity,
             "line": self.line,
             "cwe": self.cwe,
+            "snippet": self.snippet,
             "new": self.new,
             "new_issue": self.new_issue,
             "risk_score": self.risk_score

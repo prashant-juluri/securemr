@@ -24,13 +24,19 @@ def parse_semgrep(data):
         # CWE may not always exist
         cwe = metadata.get("cwe")
 
+        snippet = None
+
+        if result.get("extra", {}).get("lines"):
+            snippet = result["extra"]["lines"]
+
         finding = Finding(
             file_path=file_path,
             rule_id=rule_id,
             message=message,
             severity=severity,
             line=line,
-            cwe=cwe
+            cwe=cwe,
+            snippet=snippet
         )
 
         findings.append(finding)

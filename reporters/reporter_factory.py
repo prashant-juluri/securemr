@@ -1,5 +1,6 @@
 import os
 
+from utils.ci_environment import CIEnvironment
 from reporters.github_reporter import GithubReporter
 from reporters.gitlab_reporter import GitlabReporter
 from reporters.console_reporter import ConsoleReporter
@@ -12,19 +13,22 @@ class ReporterFactory:
 
         reporters = []
 
-        # GitHub reporter
-        if os.getenv("GITHUB_ACTIONS") == "true":
+        environment = CIEnvironment.detect()
+
+        print(f"[SecureMR] Environment detected: {environment}")
+
+        # GitHub
+        if environment == "github":
 
             token = os.getenv("GITHUB_TOKEN")
             repo = os.getenv("GITHUB_REPOSITORY")
             pr = os.getenv("PR_NUMBER")
 
             if token and repo and pr:
-                print("[SecureMR] GitHub reporter enabled")
                 reporters.append(GithubReporter(token, repo, pr))
 
-        # GitLab reporter
-        if os.getenv("GITLAB_CI") == "true":
+        # GitLab
+        if environment == "gitlab":
 
             token = os.getenv("GITLAB_TOKEN")
             project_id = os.getenv("CI_PROJECT_ID")
@@ -32,10 +36,9 @@ class ReporterFactory:
             api_url = os.getenv("CI_API_V4_URL")
 
             if token and project_id and mr_iid:
-                print("[SecureMR] GitLab MR reporter enabled")
                 reporters.append(GitlabReporter(token, project_id, mr_iid, api_url))
 
-        # Always include console reporter
+        # Always include console output
         reporters.append(ConsoleReporter())
 
         return reporters

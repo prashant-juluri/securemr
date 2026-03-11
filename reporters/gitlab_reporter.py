@@ -10,6 +10,23 @@ class GitlabReporter:
         self.mr_iid = mr_iid
         self.api_url = api_url
 
+    def format_report(report):
+
+        lines = []
+        lines.append("## 🔒 SecureMR Security Report\n")
+
+        lines.append(f"Total Findings: {report['total_findings']}")
+        lines.append(f"HIGH: {report['high_risk']}")
+        lines.append(f"MEDIUM: {report['medium_risk']}")
+        lines.append(f"LOW: {report['low_risk']}\n")
+
+        for f in report["findings"]:
+            lines.append(f"### {f['file']}")
+            lines.append(f"Rule: `{f['rule']}`")
+            lines.append(f"CWE: {f['cwe']}\n")
+
+        return "\n".join(lines)
+
 
     def publish(self, report):
 
@@ -28,9 +45,7 @@ class GitlabReporter:
         if not isinstance(report, str):
             report = str(report)
 
-        payload = {
-            "body": report
-        }
+        payload = {"body": self.format_report(report)}
 
         response = requests.post(url, headers=headers, json=payload)
 
@@ -42,3 +57,6 @@ class GitlabReporter:
                 response.status_code,
                 response.text
             )
+
+
+    

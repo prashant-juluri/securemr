@@ -34,7 +34,10 @@ class ExplainAgent:
 
         response = self.llm.generate(
             prompt,
-            model=AI_MODELS["explain"]
+            model=AI_MODELS["explain"],
+            response_format={"type": "json_object"}
         )
+
+        print("[SecureMR] Explain LLM raw response:", response)
 
         return parse_and_validate(response, self.schema)

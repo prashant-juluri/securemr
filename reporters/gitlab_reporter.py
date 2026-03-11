@@ -12,6 +12,10 @@ class GitlabReporter:
 
     def format_report(self, report):
 
+        # If report is already formatted text, return it
+        if isinstance(report, str):
+            return report
+
         lines = []
         lines.append("## 🔒 SecureMR Security Report\n")
 
@@ -20,10 +24,10 @@ class GitlabReporter:
         lines.append(f"MEDIUM: {report['medium_risk']}")
         lines.append(f"LOW: {report['low_risk']}\n")
 
-        for f in report["findings"]:
-            lines.append(f"### {f['file']}")
-            lines.append(f"Rule: `{f['rule']}`")
-            lines.append(f"CWE: {f['cwe']}\n")
+        for finding in report.get("findings", []):
+            lines.append(f"### {finding.get('file')}")
+            lines.append(f"Rule: `{finding.get('rule')}`")
+            lines.append(f"CWE: {finding.get('cwe')}\n")
 
         return "\n".join(lines)
 

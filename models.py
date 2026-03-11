@@ -1,33 +1,42 @@
-import hashlib
-
-
 class Finding:
 
-    def __init__(self, file, line, rule, severity, snippet):
-
-        self.file = file
-        self.line = line
-        self.rule = rule
+    def __init__(
+        self,
+        file_path,
+        rule_id,
+        message,
+        severity,
+        line,
+        cwe=None
+    ):
+        self.file_path = file_path
+        self.rule_id = rule_id
+        self.message = message
         self.severity = severity
-        self.snippet = snippet
+        self.line = line
+        self.cwe = cwe
 
-        self.cwe = None
-        self.owasp = None
-        self.category = None
+        # SecureMR metadata
+        self.new = False
+        self.risk_score = None
 
-        self.risk_weight = None
-        self.new_issue = False
-
-        self.fingerprint = self.generate_fingerprint()
-
-
-    def generate_fingerprint(self):
-
-        base = f"{self.file}:{self.line}:{self.rule}"
-
-        return hashlib.sha256(base.encode()).hexdigest()
-
+    def to_dict(self):
+        return {
+            "file_path": self.file_path,
+            "rule_id": self.rule_id,
+            "message": self.message,
+            "severity": self.severity,
+            "line": self.line,
+            "cwe": self.cwe,
+            "new": self.new,
+            "risk_score": self.risk_score
+        }
 
     def __repr__(self):
-
-        return f"<Finding {self.rule} {self.file}:{self.line}>"
+        return (
+            f"Finding(file={self.file_path}, "
+            f"rule={self.rule_id}, "
+            f"severity={self.severity}, "
+            f"line={self.line}, "
+            f"cwe={self.cwe})"
+        )

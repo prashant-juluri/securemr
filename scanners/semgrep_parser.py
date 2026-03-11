@@ -7,30 +7,29 @@ def parse_semgrep(data):
 
     results = data.get("results", [])
 
-    for r in results:
+    for result in results:
 
-        rule = r.get("check_id", "")
-        path = r.get("path", "")
-
-        start = r.get("start", {})
-        line = start.get("line", 0)
-
-        extra = r.get("extra", {})
-        severity = extra.get("severity", "")
-
+        extra = result.get("extra", {})
         metadata = extra.get("metadata", {})
 
-        cwe = ""
-        if "cwe" in metadata:
-            cwe_data = metadata["cwe"]
-            if isinstance(cwe_data, list) and len(cwe_data) > 0:
-                cwe = cwe_data[0]
+        file_path = result.get("path")
+        rule_id = result.get("check_id")
+        message = extra.get("message")
+        severity = extra.get("severity")
+
+        line = None
+        if result.get("start"):
+            line = result["start"].get("line")
+
+        # CWE may not always exist
+        cwe = metadata.get("cwe")
 
         finding = Finding(
-            file=path,
-            line=line,
-            rule=rule,
+            file_path=file_path,
+            rule_id=rule_id,
+            message=message,
             severity=severity,
+            line=line,
             cwe=cwe
         )
 

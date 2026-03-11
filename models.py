@@ -10,10 +10,10 @@ class Finding:
         cwe=None
     ):
 
-        # Core semgrep fields
+        # Semgrep data
         self.file_path = file_path
         self.rule_id = rule_id
-        self.rule = rule_id  # backward compatibility
+        self.rule = rule_id
 
         self.message = message
         self.severity = severity
@@ -22,6 +22,7 @@ class Finding:
 
         # SecureMR metadata
         self.new = False
+        self.new_issue = False
         self.risk_score = None
 
 
@@ -35,6 +36,7 @@ class Finding:
             "line": self.line,
             "cwe": self.cwe,
             "new": self.new,
+            "new_issue": self.new_issue,
             "risk_score": self.risk_score
         }
 

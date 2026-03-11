@@ -1,43 +1,51 @@
-import os
 import requests
 
-from reporters.base_reporter import BaseReporter
 
+class GitlabReporter:
 
-class GitLabReporter(BaseReporter):
+    def __init__(self, token, project_id, mr_iid, api_url):
 
-    def __init__(self):
+        self.token = token
+        self.project_id = project_id
+        self.mr_iid = mr_iid
+        self.api_url = api_url
 
-        self.token = os.getenv("GITLAB_TOKEN")
-        self.project_id = os.getenv("CI_PROJECT_ID")
-        self.mr_iid = os.getenv("CI_MERGE_REQUEST_IID")
-        self.api_url = os.getenv("CI_API_V4_URL")
 
     def publish(self, report):
 
-        if not self.token or not self.project_id or not self.mr_iid:
+        if not self.mr_iid:
+            print("[SecureMR] No merge request detected. Skipping GitLab comment.")
             return
-
-        body = (
-            "🔒 **SecureMR Security Report**\n\n"
-            f"Total Findings: {report['total_findings']}\n"
-            f"HIGH: {report['high_risk']}\n"
-            f"MEDIUM: {report['medium_risk']}\n"
-            f"LOW: {report['low_risk']}\n\n"
-            "### Findings\n"
-        )
-
-        for f in report["findings"]:
-
-            body += (
-                f"- `{f['file']}` — {f['rule']} "
-                f"(CWE: {f['cwe']}) — **{f['risk']}**\n"
-            )
 
         url = f"{self.api_url}/projects/{self.project_id}/merge_requests/{self.mr_iid}/notes"
 
         headers = {
-            "PRIVATE-TOKEN": self.token
+            "PRIVATE-TOKEN": self.token,
+            "Content-Type": "application/json"
         }
 
-        requests.post(url, headers=headers, json={"body": body})
+        payload = {
+            "body": report
+        }
+
+        try:
+
+            response = requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                timeout=10
+            )
+
+            if response.status_code == 201:
+                print("[SecureMR] Comment posted to GitLab MR")
+
+            else:
+                print(
+                    "[SecureMR] Failed to post GitLab comment:",
+                    response.status_code,
+                    response.text
+                )
+
+        except requests.exceptions.RequestException as e:
+            print("[SecureMR] GitLab API request failed:", str(e))

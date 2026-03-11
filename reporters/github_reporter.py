@@ -5,7 +5,7 @@ import requests
 from reporters.base_reporter import BaseReporter
 
 
-class GitHubReporter(BaseReporter):
+class GithubReporter(BaseReporter):
 
     def __init__(self):
 

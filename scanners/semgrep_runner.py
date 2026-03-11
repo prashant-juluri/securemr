@@ -11,7 +11,7 @@ def run_semgrep(target_path="."):
 
     cmd = [
         "semgrep",
-        "--config=p/owasp-top-ten",
+        "--config=p/default",
         "--no-git-ignore",
         "--metrics=off",
         target_path,

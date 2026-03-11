@@ -9,8 +9,12 @@ class Finding:
         line,
         cwe=None
     ):
+
+        # Core semgrep fields
         self.file_path = file_path
         self.rule_id = rule_id
+        self.rule = rule_id  # backward compatibility
+
         self.message = message
         self.severity = severity
         self.line = line
@@ -20,10 +24,12 @@ class Finding:
         self.new = False
         self.risk_score = None
 
+
     def to_dict(self):
         return {
             "file_path": self.file_path,
             "rule_id": self.rule_id,
+            "rule": self.rule,
             "message": self.message,
             "severity": self.severity,
             "line": self.line,
@@ -31,6 +37,7 @@ class Finding:
             "new": self.new,
             "risk_score": self.risk_score
         }
+
 
     def __repr__(self):
         return (

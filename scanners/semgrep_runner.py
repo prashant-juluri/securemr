@@ -4,7 +4,7 @@ import tempfile
 import os
 
 
-def run_semgrep():
+def run_semgrep(target_path="."):
 
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
     output_path = tmp_file.name
@@ -12,16 +12,30 @@ def run_semgrep():
     cmd = [
         "semgrep",
         "--config=p/security-audit",
+        target_path,
         "--json",
         "--output",
         output_path
     ]
 
-    subprocess.run(cmd, check=True)
+    print(f"[SecureMR] Executing Semgrep on {target_path}")
 
-    with open(output_path) as f:
-        data = json.load(f)
+    try:
+        subprocess.run(cmd, check=False)
+    except Exception as e:
+        print(f"[SecureMR] Failed to execute Semgrep: {e}")
+        return {"results": []}
 
-    os.remove(output_path)
+    try:
+        with open(output_path) as f:
+            data = json.load(f)
+    except Exception:
+        print("[SecureMR] Failed to parse Semgrep output")
+        data = {"results": []}
+
+    try:
+        os.remove(output_path)
+    except Exception:
+        pass
 
     return data

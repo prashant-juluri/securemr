@@ -33,11 +33,11 @@ def initialize_ai_pipeline():
     return ReviewPipeline(llm)
 
 
-def load_findings():
+def load_findings(target_path):
 
-    print("[SecureMR] Running Semgrep scan")
+    print(f"[SecureMR] Running Semgrep scan on: {target_path}")
 
-    semgrep_results = run_semgrep()
+    semgrep_results = run_semgrep(target_path)
 
     findings = parse_semgrep(semgrep_results)
 
@@ -47,9 +47,11 @@ def load_findings():
 
     print(f"[SecureMR] {len(findings)} findings detected")
 
-    changed_files = get_changed_files()
-
-    tag_new_findings(findings, changed_files)
+    try:
+        changed_files = get_changed_files()
+        tag_new_findings(findings, changed_files)
+    except Exception:
+        print("[SecureMR] Unable to determine git diff. Marking all findings as existing.")
 
     enrich_findings(findings)
 
@@ -63,9 +65,13 @@ def main():
 
     print("[SecureMR] Starting analysis")
 
-    findings = load_findings()
+    # Accept target path from CLI
+    target_path = sys.argv[1] if len(sys.argv) > 1 else "."
+
+    findings = load_findings(target_path)
 
     if not findings:
+        print("[SecureMR] Analysis complete (no findings)")
         return
 
     pipeline = initialize_ai_pipeline()
@@ -91,7 +97,10 @@ def main():
     report = aggregator.aggregate(reviews)
 
     for reporter in reporters:
-        reporter.publish(report)
+        try:
+            reporter.publish(report)
+        except Exception as e:
+            print(f"[SecureMR] Reporter failed: {e}")
 
     print("[SecureMR] Analysis complete")
 

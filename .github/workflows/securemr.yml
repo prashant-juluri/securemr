@@ -1,17 +1,15 @@
-name: SecureMR Security Scan
+name: SecureMR Self Test
 
 on:
-  pull_request:
+  push:
     branches:
       - main
+  pull_request:
 
 jobs:
   securemr:
-    runs-on: ubuntu-latest
 
-    permissions:
-      contents: read
-      pull-requests: write
+    runs-on: ubuntu-latest
 
     steps:
 
@@ -22,12 +20,9 @@ jobs:
         run: |
           docker build -t securemr .
 
-      - name: Run SecureMR
+      - name: Run SecureMR on repository
         run: |
           docker run \
             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
-            -e GITHUB_REPOSITORY=${{ github.repository }} \
-            -e GITHUB_EVENT_PATH=${{ github.event_path }} \
-            -v ${{ github.workspace }}:/app \
-            securemr
+            -v ${{ github.workspace }}:/target \
+            securemr python securemr.py /target

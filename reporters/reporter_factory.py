@@ -10,7 +10,9 @@ class ReporterFactory:
     @staticmethod
     def create():
 
-        # GitHub detection
+        reporters = []
+
+        # GitHub reporter
         if os.getenv("GITHUB_ACTIONS") == "true":
 
             token = os.getenv("GITHUB_TOKEN")
@@ -18,10 +20,10 @@ class ReporterFactory:
             pr = os.getenv("PR_NUMBER")
 
             if token and repo and pr:
-                print("[SecureMR] GitHub PR reporter enabled")
-                return GithubReporter(token, repo, pr)
+                print("[SecureMR] GitHub reporter enabled")
+                reporters.append(GithubReporter(token, repo, pr))
 
-        # GitLab detection
+        # GitLab reporter
         if os.getenv("GITLAB_CI") == "true":
 
             token = os.getenv("GITLAB_TOKEN")
@@ -31,7 +33,9 @@ class ReporterFactory:
 
             if token and project_id and mr_iid:
                 print("[SecureMR] GitLab MR reporter enabled")
-                return GitlabReporter(token, project_id, mr_iid, api_url)
+                reporters.append(GitlabReporter(token, project_id, mr_iid, api_url))
 
-        print("[SecureMR] Using console reporter")
-        return ConsoleReporter()
+        # Always include console reporter
+        reporters.append(ConsoleReporter())
+
+        return reporters

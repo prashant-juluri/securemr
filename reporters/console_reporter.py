@@ -21,6 +21,23 @@ class ConsoleReporter(BaseReporter):
             print(f"File: {f['file']}")
             print(f"Rule: {f['rule']}")
             print(f"CWE: {f['cwe']}")
-            print(f"Risk: {f['risk']}")
+
+            review = f.get("review", {})
+
+            explanation = review.get("explanation", {})
+            risk = review.get("risk", {})
+            fix = review.get("fix", {})
+
+            if explanation:
+                print(f"\nExplanation:")
+                print(explanation.get("explanation", ""))
+
+            if risk:
+                print(f"\nRisk Level: {risk.get('risk_level', '')}")
+                print(f"Risk Reason: {risk.get('risk_reason', '')}")
+
+            if fix:
+                print(f"\nSuggested Fix:")
+                print(fix.get("fix_description", ""))
 
         print("================================\n")

@@ -1,4 +1,5 @@
 import json
+import traceback
 from pathlib import Path
 from string import Template
 
@@ -26,6 +27,7 @@ class FixAgent:
     def analyze(self, finding, explanation):
 
         try:
+
             prompt = self.prompt_template.safe_substitute(
                 rule=finding.rule,
                 severity=finding.severity,
@@ -44,11 +46,13 @@ class FixAgent:
                 model=AI_MODELS["fix"]
             )
 
+            print("[SecureMR] Fix LLM raw response:", response)
+
+            return parse_and_validate(response, self.schema)
+
         except Exception as e:
-            print("[SecureMR] FixAgent failed to generate response:", str(e))
-            raise e
 
+            print("[SecureMR] FixAgent failed:", str(e))
+            traceback.print_exc()
 
-        print("[SecureMR] Fix LLM raw response:", response)
-
-        return parse_and_validate(response, self.schema)
+            raise

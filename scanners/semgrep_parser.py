@@ -24,10 +24,14 @@ def parse_semgrep(data):
         # CWE may not always exist
         cwe = metadata.get("cwe")
 
-        snippet = None
+        snippet = ""
 
-        if result.get("extra", {}).get("lines"):
-            snippet = result["extra"]["lines"]
+        extra = result.get("extra", {})
+
+        if "lines" in extra:
+            snippet = extra["lines"]
+        elif "message" in result:
+            snippet = result["message"]
 
         finding = Finding(
             file_path=file_path,

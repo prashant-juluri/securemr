@@ -29,7 +29,7 @@ class ReviewAggregator:
                 "rule": finding.rule,
                 "cwe": finding.cwe,
                 "risk": risk_level,
-                "review": getattr(finding, "review", {})
+                "review": review,
             })
 
         return report

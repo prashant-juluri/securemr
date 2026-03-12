@@ -21,23 +21,30 @@ class ExplainAgent:
             self.schema = json.load(f)
 
     def analyze(self, finding):
+        
+        
+        try:
+            prompt = self.prompt_template.format(
+                rule=finding.rule,
+                severity=finding.severity,
+                cwe=finding.cwe,
+                owasp=finding.owasp,
+                file=finding.file,
+                line=finding.line,
+                snippet=finding.snippet
+            )
 
-        prompt = self.prompt_template.format(
-            rule=finding.rule,
-            severity=finding.severity,
-            cwe=finding.cwe,
-            owasp=finding.owasp,
-            file=finding.file,
-            line=finding.line,
-            snippet=finding.snippet
-        )
+            print("Explain Prompt is: " + prompt)
 
-        response = self.llm.generate(
-            prompt,
-            model=AI_MODELS["explain"],
-            response_format={"type": "json_object"}
-        )
-
+            response = self.llm.generate(
+                prompt,
+                model=AI_MODELS["explain"],
+                response_format={"type": "json_object"}
+            )
+        except Exception as e:
+            print("[SecureMR] ExplainAgent failed to generate response:", str(e))
+            raise e
+        
         print("[SecureMR] Explain LLM raw response:", response)
 
         return parse_and_validate(response, self.schema)

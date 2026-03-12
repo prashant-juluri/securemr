@@ -15,7 +15,7 @@ class ReviewPipeline:
         """
         Run the AI review pipeline for a finding.
         """
-
+        print(f"[SecureMR] Running AI review pipeline for finding: {finding.rule} in {finding.file}:{finding.line}")
         explanation_result = {}
         risk_result = {}
         fix_result = {}

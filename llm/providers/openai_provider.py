@@ -11,13 +11,15 @@ class OpenAIProvider:
         self.client = OpenAI(api_key=api_key)
 
     def generate(self, prompt, model=None):
-        
+
         model = model or DEFAULT_MODEL
 
-        print("[SecureMR] Calling OpenAI model:", self.model)
+        print("[SecureMR] Calling OpenAI model:", model)
+
         response = self.client.responses.create(
             model=model,
-            input=prompt
+            input=prompt,
+            response_format={"type": "json_object"}
         )
 
         return response.output_text

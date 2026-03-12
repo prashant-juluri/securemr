@@ -45,7 +45,7 @@ class ReviewPipeline:
 
         # Step 3 — Fix generation
         try:
-            fix_result = self.fix_agent.analyze(finding)
+            fix_result = self.fix_agent.analyze(finding, explanation_text)
         except Exception as e:
             print(f"[SecureMR] FixAgent failed for finding {finding.rule} in {finding.file}:{finding.line}: {str(e)}")  
             fix_result = {

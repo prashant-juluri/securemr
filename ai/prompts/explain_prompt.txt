@@ -1,35 +1,35 @@
-You are a senior application security engineer reviewing a code change.
+You are a DevSecOps security expert.
 
-VULNERABILITY
+Analyze the following security finding.
 
-Rule: {rule}
-Severity: {severity}
-CWE: {cwe}
-OWASP Category: {owasp}
+Rule:
+$rule
 
-CODE CONTEXT
+Severity:
+$severity
 
-File: {file}
-Line: {line}
+CWE:
+$cwe
 
-Code Snippet:
-{snippet}
+OWASP:
+$owasp
 
-TASK
+File:
+$file
+
+Line:
+$line
+
+Code snippet:
+$snippet
+
 
 Explain the vulnerability clearly for a developer.
 
-Focus on:
-1. What the vulnerability is
-2. Why the code is vulnerable
-3. How an attacker could exploit it
-
-OUTPUT FORMAT
-
-Return JSON only:
+Return JSON in this format:
 
 {
-  "vulnerability_type": "",
-  "explanation": "",
-  "exploit_scenario": ""
+  "vulnerability_type": "...",
+  "explanation": "...",
+  "impact": "..."
 }

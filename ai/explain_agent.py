@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from string import Template
 from config import AI_MODELS
 from ai.json_utils import parse_and_validate
 
@@ -15,16 +16,16 @@ class ExplainAgent:
         self.llm = llm
 
         with open(PROMPT_PATH) as f:
-            self.prompt_template = f.read()
+            self.prompt_template = Template(f.read())
 
         with open(SCHEMA_PATH) as f:
             self.schema = json.load(f)
 
+
     def analyze(self, finding):
-        
-        
+
         try:
-            prompt = self.prompt_template.format(
+            prompt = self.prompt_template.safe_substitute(
                 rule=finding.rule,
                 severity=finding.severity,
                 cwe=finding.cwe,
@@ -34,17 +35,18 @@ class ExplainAgent:
                 snippet=finding.snippet
             )
 
-            print("Explain Prompt is: " + prompt)
+            print("[SecureMR] Explain prompt generated")
 
             response = self.llm.generate(
                 prompt,
-                model=AI_MODELS["explain"],
-                response_format={"type": "json_object"}
+                model=AI_MODELS["explain"]
             )
+
         except Exception as e:
             print("[SecureMR] ExplainAgent failed to generate response:", str(e))
             raise e
-        
+
+
         print("[SecureMR] Explain LLM raw response:", response)
 
         return parse_and_validate(response, self.schema)

@@ -22,22 +22,30 @@ class ConsoleReporter(BaseReporter):
             print(f"Rule: {f['rule']}")
             print(f"CWE: {f['cwe']}")
 
-            review = f.get("review", {})
+            review = f.get("review") or {}
 
-            explanation = review.get("explanation", {})
-            risk = review.get("risk", {})
-            fix = review.get("fix", {})
+            explanation = review.get("explanation") or {}
+            risk = review.get("risk") or {}
+            fix = review.get("fix") or {}
 
-            if explanation:
-                print(f"\nExplanation:")
-                print(explanation.get("explanation", ""))
+            # Explanation
+            if isinstance(explanation, dict) and "explanation" in explanation:
+                print("\nExplanation:")
+                print(explanation["explanation"])
 
-            if risk:
+            # Risk
+            if isinstance(risk, dict) and "risk_level" in risk:
                 print(f"\nRisk Level: {risk.get('risk_level', '')}")
                 print(f"Risk Reason: {risk.get('risk_reason', '')}")
 
-            if fix:
-                print(f"\nSuggested Fix:")
-                print(fix.get("fix_description", ""))
+            # Fix
+            if isinstance(fix, dict) and "fix_description" in fix:
+                print("\nSuggested Fix:")
+                print(fix["fix_description"])
+
+            # Debug fallback if parsing failed
+            if "error" in explanation or "error" in risk or "error" in fix:
+                print("\n⚠ AI Output Parsing Issue")
+                print("Raw AI response detected.")
 
         print("================================\n")

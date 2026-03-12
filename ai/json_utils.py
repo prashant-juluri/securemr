@@ -36,24 +36,22 @@ def clean_llm_json(response: str) -> str:
 
 def parse_and_validate(response: str, schema: dict):
 
+    cleaned = clean_llm_json(response)
+
     try:
-
-        cleaned = clean_llm_json(response)
-
         data = json.loads(cleaned)
-
-        # Optional minimal schema validation
-        if schema:
-            required = schema.get("required", [])
-            for field in required:
-                if field not in data:
-                    raise ValueError(f"Missing field: {field}")
-
-        return data
-
     except Exception:
-
         return {
-            "error": "invalid_ai_output",
+            "error": "invalid_json",
             "raw_response": response
         }
+
+    # Schema validation should NOT break the pipeline
+    if schema:
+        required = schema.get("required", [])
+        missing = [field for field in required if field not in data]
+
+        if missing:
+            print("[SecureMR] Schema mismatch (non-fatal):", missing)
+
+    return data

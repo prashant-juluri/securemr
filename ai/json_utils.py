@@ -4,10 +4,7 @@ import json
 def clean_llm_json(response: str) -> str:
     """
     Cleans LLM responses so they can be parsed as JSON.
-    Handles:
-    - ```json code blocks
-    - leading 'json'
-    - stray whitespace
+    Handles markdown code blocks like ```json ... ```
     """
 
     if not response:
@@ -15,16 +12,23 @@ def clean_llm_json(response: str) -> str:
 
     response = response.strip()
 
-    # Handle ```json ... ```
+    # Remove ```json ... ``` blocks
     if response.startswith("```"):
-        parts = response.split("```")
-        if len(parts) >= 2:
-            response = parts[1]
+        lines = response.splitlines()
+
+        # Remove first line ```json or ```
+        lines = lines[1:]
+
+        # Remove last line ```
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+
+        response = "\n".join(lines)
 
     response = response.strip()
 
-    # Remove leading "json"
-    if response.startswith("json"):
+    # Remove leading 'json'
+    if response.lower().startswith("json"):
         response = response[4:].strip()
 
     return response
@@ -38,11 +42,9 @@ def parse_and_validate(response: str, schema: dict):
 
         data = json.loads(cleaned)
 
-        # Optional schema validation
+        # Optional minimal schema validation
         if schema:
-
             required = schema.get("required", [])
-
             for field in required:
                 if field not in data:
                     raise ValueError(f"Missing field: {field}")

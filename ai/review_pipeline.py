@@ -26,7 +26,7 @@ class ReviewPipeline:
         except Exception as e:
             explanation_result = {
                 "error": "explain_agent_failed",
-                "details": str(e)
+                "details": str(e.__traceback__)
             }
 
         explanation_text = explanation_result.get("explanation", "")
@@ -40,7 +40,7 @@ class ReviewPipeline:
         except Exception as e:
             risk_result = {
                 "error": "risk_agent_failed",
-                "details": str(e)
+                "details": str(e.__traceback__)
             }
 
         # Step 3 — Fix generation
@@ -49,7 +49,7 @@ class ReviewPipeline:
         except Exception as e:
             fix_result = {
                 "error": "fix_agent_failed",
-                "details": str(e)
+                "details": str(e.__traceback__)
             }
 
         return {

@@ -18,8 +18,7 @@ class OpenAIProvider:
 
         response = self.client.responses.create(
             model=model,
-            input=prompt,
-            response_format={"type": "json_object"}
+            input=prompt
         )
 
         return response.output_text

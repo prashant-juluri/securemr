@@ -22,11 +22,10 @@ def get_changed_files():
         print(f"[SecureMR] GitLab MR detected. Base branch: {base_branch}")
 
     else:
-        base_branch = "main"
-        print(f"[SecureMR] Local run detected. Defaulting base branch to: {base_branch}")
+        print("[SecureMR] No PR/MR detected. Diff filtering disabled.")
+        return None
 
     try:
-        # Ensure base branch exists locally
         subprocess.run(
             ["git", "fetch", "origin", base_branch],
             capture_output=True,
@@ -40,24 +39,25 @@ def get_changed_files():
 
         print(f"[SecureMR] Using merge-base: {merge_base}")
 
+        result = subprocess.run(
+            ["git", "diff", "--name-only", merge_base, "HEAD"],
+            capture_output=True,
+            text=True
+        )
+
+        files = result.stdout.strip().split("\n")
+
+        files = [normalize_path(f) for f in files if f]
+
+        print(f"[SecureMR] Files changed in PR/MR: {files}")
+
+        return files
+
     except Exception as e:
 
-        print("[SecureMR] Failed to determine merge-base:", e)
-        merge_base = "HEAD"
+        print("[SecureMR] Diff detection failed:", e)
 
-    result = subprocess.run(
-        ["git", "diff", "--name-only", merge_base, "HEAD"],
-        capture_output=True,
-        text=True
-    )
-
-    files = result.stdout.strip().split("\n")
-
-    files = [normalize_path(f) for f in files if f]
-
-    print(f"[SecureMR] Files changed in PR/MR: {files}")
-
-    return files
+        return None
 
 
 def normalize_path(path):
@@ -65,6 +65,15 @@ def normalize_path(path):
 
 
 def tag_new_findings(findings, changed_files):
+    """
+    Tag findings that are part of the current diff.
+    """
+
+    if changed_files is None:
+        print("[SecureMR] Running full repository analysis.")
+        for finding in findings:
+            finding.new_issue = True
+        return
 
     changed = set(normalize_path(f) for f in changed_files)
 

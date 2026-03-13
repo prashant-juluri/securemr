@@ -52,6 +52,12 @@ def load_findings(target_path):
     try:
         changed_files = get_changed_files()
         tag_new_findings(findings, changed_files)
+        if changed_files is None:
+            filtered_findings = findings
+        else:
+            filtered_findings = [f for f in findings if f.new_issue]
+
+        print(f"[SecureMR] {len(filtered_findings)} findings detected in the current diff")
     except Exception:
         print("[SecureMR] Unable to determine git diff. Marking all findings as existing.")
 

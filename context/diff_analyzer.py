@@ -26,11 +26,13 @@ def get_changed_files():
         return None
 
     try:
-        subprocess.run(
-            ["git", "fetch", "origin", base_branch],
-            capture_output=True,
-            text=True
-        )
+
+
+        # Ensure full git history exists (CI often uses shallow clones)
+        subprocess.run(["git", "fetch", "--unshallow"], check=False)
+
+        # Ensure base branch exists locally
+        subprocess.run(["git", "fetch", "origin", base_branch], check=False)
 
         merge_base = subprocess.check_output(
             ["git", "merge-base", "HEAD", f"origin/{base_branch}"],

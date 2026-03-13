@@ -149,8 +149,8 @@ def tag_new_findings(findings, changed_files):
     for finding in findings:
 
         normalized = normalize_path(finding.file)
-
-        if normalized in changed:
+        repo_relative = os.path.relpath(normalized, "/target")
+        if repo_relative in changed:
             finding.new_issue = True
         else:
             finding.new_issue = False

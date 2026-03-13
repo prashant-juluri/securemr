@@ -29,6 +29,7 @@ def get_changed_files():
     if gitlab_base_sha:
 
         print(f"[SecureMR] GitLab MR detected. Diff base SHA: {gitlab_base_sha}")
+        print("[SecureMR] Current working directory:", os.getcwd())
 
         diff = run([
             "git",

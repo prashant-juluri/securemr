@@ -10,14 +10,18 @@ def run_semgrep(target_path="."):
     output_path = tmp_file.name
 
     cmd = [
-        "semgrep",
-        "--config=p/default",
-        "--no-git-ignore",
-        "--metrics=off",
-        target_path,
-        "--json",
-        "--output",
-        output_path
+    "semgrep",
+    "--config=p/default",
+    "--config=p/secrets",
+    "--config=p/dockerfile",
+    "--config=p/supply-chain",
+    "--no-git-ignore",
+    "--metrics=off",
+    "--timeout=0",
+    "--optimizations=all",
+    "--json",
+    "--output", output_path,
+    target_path
     ]
 
     print(f"[SecureMR] Executing Semgrep on {target_path}")

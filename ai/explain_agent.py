@@ -47,6 +47,6 @@ class ExplainAgent:
             raise e
 
 
-        print("[SecureMR] Explain LLM raw response:", response)
+        #print("[SecureMR] Explain LLM raw response:", response)
 
         return parse_and_validate(response, self.schema)

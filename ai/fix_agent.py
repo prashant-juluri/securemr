@@ -46,7 +46,7 @@ class FixAgent:
                 model=AI_MODELS["fix"]
             )
 
-            print("[SecureMR] Fix LLM raw response:", response)
+            #print("[SecureMR] Fix LLM raw response:", response)
 
             return parse_and_validate(response, self.schema)
 

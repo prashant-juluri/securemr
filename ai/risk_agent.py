@@ -49,6 +49,6 @@ class RiskAgent:
             raise e
 
 
-        print("[SecureMR] Risk LLM raw response:", response)
+        #print("[SecureMR] Risk LLM raw response:", response)
 
         return parse_and_validate(response, self.schema)

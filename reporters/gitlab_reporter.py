@@ -1,7 +1,10 @@
 import requests
 
+from reporters.base_reporter import BaseReporter
+from reporters.formatter import format_report
 
-class GitlabReporter:
+
+class GitlabReporter(BaseReporter):
 
     def __init__(self, token, project_id, mr_iid, api_url):
 
@@ -10,57 +13,28 @@ class GitlabReporter:
         self.mr_iid = mr_iid
         self.api_url = api_url
 
-    def format_report(self, report):
-
-        # If report is already formatted text, return it
-        if isinstance(report, str):
-            return report
-
-        lines = []
-        lines.append("## 🔒 SecureMR Security Report\n")
-
-        lines.append(f"Total Findings: {report['total_findings']}")
-        lines.append(f"HIGH: {report['high_risk']}")
-        lines.append(f"MEDIUM: {report['medium_risk']}")
-        lines.append(f"LOW: {report['low_risk']}\n")
-
-        for finding in report.get("findings", []):
-            lines.append(f"### {finding.get('file')}")
-            lines.append(f"Rule: `{finding.get('rule')}`")
-            lines.append(f"CWE: {finding.get('cwe')}\n")
-
-        return "\n".join(lines)
-
 
     def publish(self, report):
 
-        if not self.mr_iid:
-            print("[SecureMR] No merge request detected. Skipping GitLab comment.")
-            return
+        body = format_report(report)
 
         url = f"{self.api_url}/projects/{self.project_id}/merge_requests/{self.mr_iid}/notes"
 
         headers = {
-            "PRIVATE-TOKEN": self.token,
-            "Content-Type": "application/json"
+            "PRIVATE-TOKEN": self.token
         }
 
-        # Convert report to string if needed
-        if not isinstance(report, str):
-            report = str(report)
+        payload = {
+            "body": body
+        }
 
-        payload = {"body": self.format_report(report)}
-
-        response = requests.post(url, headers=headers, json=payload)
+        response = requests.post(
+            url,
+            headers=headers,
+            json=payload
+        )
 
         if response.status_code == 201:
             print("[SecureMR] Comment posted to GitLab MR")
         else:
-            print(
-                "[SecureMR] Failed to post GitLab comment:",
-                response.status_code,
-                response.text
-            )
-
-
-    
+            print("[SecureMR] Failed to post GitLab comment:", response.text)

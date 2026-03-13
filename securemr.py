@@ -61,11 +61,11 @@ def load_findings(target_path):
     except Exception:
         print("[SecureMR] Unable to determine git diff. Marking all findings as existing.")
 
-    print(f"[SecureMR] {len(findings)} findings detected in the current diff")
+    #print(f"[SecureMR] {len(findings)} findings detected in the current diff")
 
     print("[SecureMR] Checking for new vulnerabilities")
 
-    new_findings = mark_new_findings(findings)
+    new_findings = mark_new_findings(filtered_findings)
 
     print(f"[SecureMR] {len(new_findings)} new findings identified in the current PR/MR")
 

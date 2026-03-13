@@ -15,6 +15,7 @@ from ai.review_pipeline import ReviewPipeline
 from ai.review_aggregator import ReviewAggregator
 
 from reporters.reporter_factory import ReporterFactory
+from security.baseline import mark_new_findings, save_baseline
 
 from config import OPENAI_API_KEY
 
@@ -46,6 +47,7 @@ def load_findings(target_path):
         return []
 
     print(f"[SecureMR] {len(findings)} findings detected")
+    
 
     try:
         changed_files = get_changed_files()
@@ -53,12 +55,20 @@ def load_findings(target_path):
     except Exception:
         print("[SecureMR] Unable to determine git diff. Marking all findings as existing.")
 
-    enrich_findings(findings)
+    print(f"[SecureMR] {len(findings)} findings detected in the current diff")
 
-    for finding in findings:
+    print("[SecureMR] Checking for new vulnerabilities")
+
+    new_findings = mark_new_findings(findings)
+
+    print(f"[SecureMR] {len(new_findings)} new findings identified in the current PR/MR")
+
+    enrich_findings(new_findings)
+
+    for finding in new_findings:
         finding.risk_score = compute_risk_score(finding)
 
-    return findings
+    return new_findings
 
 
 def main():

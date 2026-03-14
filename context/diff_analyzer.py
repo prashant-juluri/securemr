@@ -22,6 +22,11 @@ def get_repo_root():
 
 def run(cmd):
     result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print(f"[SecureMR] Command failed: {' '.join(cmd)}")
+        print(result.stderr)
+
     return result.stdout.strip()
 
 
@@ -110,17 +115,29 @@ def get_changed_files():
                 print(f"[SecureMR] Base SHA: {github_base}")
                 print(f"[SecureMR] Head SHA: {github_head}")
 
-                base_branch = event["pull_request"]["base"]["ref"]
+                # ----------------------------
+                # Step 4: ensure commits exist
+                # ----------------------------
+                print("[SecureMR] Fetching missing commits")
 
-                git(["-C", repo_root, "fetch", "origin", base_branch])
+                git(["fetch", "--all"])
 
+                # ----------------------------
+                # Step 5: verify commits exist
+                # ----------------------------
+                print("[SecureMR] Checking commit availability")
+
+                print(git(["cat-file", "-t", github_base]))
+                print(git(["cat-file", "-t", github_head]))
+
+                # ----------------------------
+                # run diff
+                # ----------------------------
                 diff = git([
-                    "-C",
-                    repo_root,
                     "diff",
                     "--name-only",
-                    f"origin/{base_branch}",
-                    "HEAD"
+                    github_base,
+                    github_head
                 ])
 
                 

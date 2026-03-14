@@ -80,10 +80,15 @@ def get_changed_files():
                 print(f"[SecureMR] Base SHA: {github_base}")
                 print(f"[SecureMR] Head SHA: {github_head}")
 
+                base_branch = event["pull_request"]["base"]["ref"]
+
+                git(["fetch", "origin", base_branch])
+
                 diff = git([
                     "diff",
                     "--name-only",
-                    github_base
+                    f"origin/{base_branch}",
+                    "HEAD"
                 ])
 
                 files = diff.splitlines()

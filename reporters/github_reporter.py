@@ -1,8 +1,7 @@
-import os
 import requests
-
+import os
+import json
 from reporters.base_reporter import BaseReporter
-from reporters.formatter import format_report
 
 
 class GithubReporter(BaseReporter):
@@ -11,31 +10,91 @@ class GithubReporter(BaseReporter):
 
         self.token = os.getenv("GITHUB_TOKEN")
         self.repo = os.getenv("GITHUB_REPOSITORY")
-        self.pr_number = os.getenv("PR_NUMBER")
+        event_path = os.getenv("GITHUB_EVENT_PATH")
 
-        self.api_url = f"https://api.github.com/repos/{self.repo}/issues/{self.pr_number}/comments"
+        if event_path and os.path.exists(event_path):
+
+            try:
+                with open(event_path) as f:
+                    event = json.load(f)
+
+                print("[SecureMR] GitHub event loaded")
+
+            except Exception as e:
+                print(f"[SecureMR] Failed to parse GitHub event: {e}")
+                event = None
+
+        else:
+            event = None
+
+        self.pr_number = event["pull_request"]["number"] if event else None
 
 
     def publish(self, report):
 
-        body = format_report(report)
+        try:
 
-        headers = {
-            "Authorization": f"Bearer {self.token}",
-            "Accept": "application/vnd.github+json"
-        }
+            print(f"[SecureMR] Publishing GitHub report to PR #{self.pr_number}")
 
-        payload = {
-            "body": body
-        }
+            body = "## 🔒 SecureMR Security Report\n\n"
 
-        response = requests.post(
-            self.api_url,
-            headers=headers,
-            json=payload
-        )
+            for f in report["findings"]:
 
-        if response.status_code == 201:
-            print("[SecureMR] Comment posted to GitHub PR")
-        else:
-            print("[SecureMR] Failed to post GitHub comment:", response.text)
+                review = f.get("review", {})
+                explanation = review.get("explanation", {})
+                risk = review.get("risk", {})
+                fix = review.get("fix", {})
+
+                body += f"### File: `{f['file']}`\n"
+                body += f"Rule: `{f['rule']}`\n\n"
+
+                if explanation:
+                    body += "**Explanation**\n"
+                    body += explanation.get("explanation", "") + "\n\n"
+
+                if risk:
+                    body += f"**Risk Level:** {risk.get('risk_level','')}\n"
+                    body += risk.get("risk_reason", "") + "\n\n"
+
+                if fix:
+                    body += "**Suggested Fix**\n"
+                    body += fix.get("fix_description","") + "\n\n"
+
+                    patch = fix.get("patch_diff")
+
+                    if patch:
+                        body += "```diff\n"
+                        body += patch
+                        body += "\n```\n\n"
+
+        except Exception as e:
+
+            print("[SecureMR] Error formatting GitHub report:", str(e))
+            body = "SecureMR failed to format the security report."
+
+        try:
+
+            url = f"https://api.github.com/repos/{self.repo}/issues/{self.pr_number}/comments"
+
+            headers = {
+                "Authorization": f"Bearer {self.token}",
+                "Accept": "application/vnd.github+json"
+            }
+
+            payload = {
+                "body": body
+            }
+
+            print("[SecureMR] Posting comment to GitHub PR")
+
+            response = requests.post(url, headers=headers, json=payload)
+
+            if response.status_code == 201:
+                print("[SecureMR] Comment posted to GitHub PR")
+
+            else:
+                print("[SecureMR] Failed to post GitHub comment:", response.text)
+
+        except Exception as e:
+
+            print("[SecureMR] GitHub API call failed:", str(e))

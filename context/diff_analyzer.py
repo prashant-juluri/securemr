@@ -2,15 +2,47 @@ import os
 import subprocess
 
 
-REPO_PATH = "/target"
 
+
+def get_repo_root():
+    """
+    Detect the Git repository root inside the container.
+    """
+
+    if os.path.exists("/target/.git"):
+        return "/target"
+
+    for item in os.listdir("/target"):
+        path = os.path.join("/target", item)
+
+        if os.path.isdir(path) and os.path.exists(os.path.join(path, ".git")):
+            return path
+
+    return "/target"
 
 def run(cmd):
     result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        print(f"[SecureMR] Command failed: {' '.join(cmd)}")
+        print(result.stderr)
+
     return result.stdout.strip()
 
 
 def git(cmd):
+    REPO_PATH = get_repo_root()
+    print(f"[SecureMR] Repository root detected at: {REPO_PATH}")
+
+    run([
+        "git",
+        "config",
+        "--global",
+        "--add",
+        "safe.directory",
+        REPO_PATH
+    ])
+    
     return run(["git", "-C", REPO_PATH] + cmd)
 
 
@@ -18,16 +50,21 @@ def normalize_path(path):
     return os.path.normpath(path)
 
 
+
+
 def get_changed_files():
     """
     Determine files changed in PR/MR using CI commit ranges.
     """
-
+    print("[SecureMR] Determining changed files from git diff")
     # ----------------------------
     # GitLab Merge Request pipeline
     # ----------------------------
     gitlab_base = os.getenv("CI_MERGE_REQUEST_DIFF_BASE_SHA")
     gitlab_head = os.getenv("CI_COMMIT_SHA")
+
+    repo_root = get_repo_root()
+    print(f"[SecureMR] Repository root detected at: {repo_root}")   
 
     if gitlab_base and gitlab_head:
 
@@ -35,11 +72,17 @@ def get_changed_files():
         print(f"[SecureMR] Base SHA: {gitlab_base}")
         print(f"[SecureMR] Head SHA: {gitlab_head}")
 
+        base_branch = event["pull_request"]["base"]["ref"]
+
+        print(f"[SecureMR] Base branch: {base_branch}")
+
+        git(["fetch", "origin", base_branch])
+
         diff = git([
             "diff",
             "--name-only",
-            gitlab_base,
-            gitlab_head
+            f"origin/{base_branch}",
+            "HEAD"
         ])
 
         files = diff.splitlines()
@@ -52,28 +95,74 @@ def get_changed_files():
     # ----------------------------
     # GitHub Pull Request pipeline
     # ----------------------------
-    github_base = os.getenv("GITHUB_BASE_SHA")
-    github_head = os.getenv("GITHUB_SHA")
+    try:
+        print(git(["branch", "-a"]))
+        print(f"[SecureMR] Fetching GitHub event path keys")
+        github_event = os.getenv("GITHUB_EVENT_PATH")
+        #print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")
+    except Exception as e:
+        print(f"[SecureMR] Error accessing GitHub event path: {e}")
 
-    if github_base and github_head:
 
-        print("[SecureMR] GitHub PR detected")
-        print(f"[SecureMR] Base SHA: {github_base}")
-        print(f"[SecureMR] Head SHA: {github_head}")
+    if github_event:
 
-        diff = git([
-            "diff",
-            "--name-only",
-            github_base,
-            github_head
-        ])
+        try:
 
-        files = diff.splitlines()
-        files = [normalize_path(f) for f in files if f]
+            import json
+            print("[SecureMR] Git working directory test:")
+            print(git(["-C", repo_root, "status"]))
 
-        print(f"[SecureMR] Files changed in PR: {files}")
+            with open(github_event) as f:
+                event = json.load(f)
 
-        return files
+            print(f"[SecureMR] GitHub event loaded: {event.keys()}")
+
+            if "pull_request" in event:
+
+                github_base = event["pull_request"]["base"]["sha"]
+                github_head = event["pull_request"]["head"]["sha"]
+
+                print("[SecureMR] GitHub PR detected")
+                print(f"[SecureMR] Base SHA: {github_base}")
+                print(f"[SecureMR] Head SHA: {github_head}")
+
+                # ----------------------------
+                # Step 4: ensure commits exist
+                # ----------------------------
+                print("[SecureMR] Fetching missing commits")
+
+                git(["fetch", "--all"])
+
+                # ----------------------------
+                # Step 5: verify commits exist
+                # ----------------------------
+                print("[SecureMR] Checking commit availability")
+
+                print(git(["cat-file", "-t", github_base]))
+                print(git(["cat-file", "-t", github_head]))
+
+                # ----------------------------
+                # run diff
+                # ----------------------------
+                diff = git([
+                    "diff",
+                    "--name-only",
+                    github_base,
+                    github_head
+                ])
+
+                
+
+                files = diff.splitlines()
+                files = [normalize_path(f) for f in files if f]
+
+                print(f"[SecureMR] Files changed in PR: {files}")
+
+                return files
+
+        except Exception as e:
+
+            print(f"[SecureMR] Failed to parse GitHub event: {e}")
 
     # ----------------------------
     # Local execution fallback

@@ -15,14 +15,23 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Build SecureMR container
         run: |
           docker build -t securemr .
 
+
       - name: Run SecureMR on repository
         run: |
-          docker run \
+          docker run --rm \
             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e GITHUB_ACTIONS=true \
+            -e GITHUB_REPOSITORY=${{ github.repository }} \
+            -e GITHUB_EVENT_PATH=/event.json \
             -v ${{ github.workspace }}:/target \
-            securemr python securemr.py /target
+            -v ${{ github.event_path }}:/event.json \
+            securemr \
+            python securemr.py /target

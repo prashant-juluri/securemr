@@ -1,73 +1,100 @@
+
 # SecureMR
 
-**AI-powered security review for Pull Requests and Merge Requests**
+AI-assisted security reviews for Pull Requests and Merge Requests.
 
-SecureMR helps developers discover and fix security issues directly in their code review workflow. It combines **static analysis (Semgrep)** with **AI-assisted explanations and fixes** to make security findings actionable.
+SecureMR helps development teams detect and fix security issues directly in their **code review workflow**.
 
-Instead of showing raw scanner output, SecureMR provides:
+It combines:
 
-* 📖 **Clear explanation of the vulnerability**
-* ⚠️ **Risk assessment**
-* 🛠 **Suggested secure fix**
+• **Static analysis (Semgrep)**  
+• **CI-aware diff detection**  
+• **AI-generated explanations and remediation**
 
-All directly inside CI logs or MR/PR comments.
+Instead of presenting raw scanner output, SecureMR provides **actionable guidance developers can understand immediately**.
+
+Security findings appear directly in **CI logs and Pull Request / Merge Request comments**.
 
 ---
 
-# Why SecureMR?
+# Why SecureMR
 
-Traditional SAST tools produce results like:
+Traditional static analysis tools often produce results like:
 
-```
-python.sqlalchemy.security.sqlalchemy-execute-raw-query
-```
+`python.sqlalchemy.security.sqlalchemy-execute-raw-query`
 
-Which developers often ignore because they lack context.
+These identifiers provide little context and are often ignored.
 
-SecureMR converts findings into developer-friendly guidance:
+SecureMR converts scanner output into **developer-friendly guidance**:
 
 ```
 Explanation:
-The Dockerfile runs containers as root by default, which increases the
-risk of privilege escalation if the container is compromised.
+Raw SQL queries allow attackers to inject arbitrary SQL statements
+when user input is not parameterized.
 
-Risk Level: MEDIUM
+Risk Level: HIGH
 
 Suggested Fix:
-Create a non-root user and run the container with the USER directive.
+Use parameterized queries through SQLAlchemy's query builder.
 ```
 
 This helps teams **shift security left** without requiring deep security expertise.
 
 ---
 
-# Architecture
+# How SecureMR Works
 
-SecureMR follows a simple pipeline:
+SecureMR runs inside CI pipelines and analyzes **only the code introduced in a Pull Request or Merge Request**.
 
-```
-Code → Semgrep Scan → AI Review Pipeline → CI Output
-```
+Pipeline:
 
-AI review consists of three specialized agents:
+Source Code → Semgrep Security Scan → CI Diff Detection → New Vulnerability Detection → AI Security Review → PR/MR Comment + CI Logs
 
-```
-Explain Agent → explains the vulnerability  
-Risk Agent → evaluates exploitability and impact  
-Fix Agent → suggests secure code remediation
-```
+Only **new vulnerabilities introduced by the change** are analyzed by the AI pipeline.
 
 ---
 
-# Features
+# AI Security Review
 
-* Static analysis powered by **Semgrep**
-* AI-assisted security explanations
-* Suggested remediation examples
-* Works in **GitHub Actions**
-* Works in **GitLab CI**
-* Containerized for easy integration
-* Designed for **shift-left security workflows**
+Each finding is processed by three specialized agents.
+
+### Explain Agent
+Explains the vulnerability in plain language.
+
+### Risk Agent
+Evaluates exploitability and real-world impact.
+
+### Fix Agent
+Provides remediation guidance with secure code examples.
+
+---
+
+# Security Rules
+
+SecureMR runs Semgrep with curated rule packs:
+
+```
+p/default
+p/secrets
+p/dockerfile
+p/supply-chain
+```
+
+These detect issues such as:
+
+• SQL injection  
+• command injection  
+• hardcoded secrets  
+• insecure deserialization  
+• unsafe subprocess execution  
+• container privilege issues  
+• dependency risks  
+
+Example rule IDs:
+
+`python.sqlalchemy.security.sqlalchemy-execute-raw-query`  
+`python.lang.security.audit.command-injection`  
+`dockerfile.security.missing-user.missing-user`
 
 ---
 
@@ -81,27 +108,23 @@ docker pull prashantjuluri/securemr:latest
 
 ---
 
-# Running Locally
+# Running SecureMR Locally
 
-You can test SecureMR locally against any repository.
+You can test SecureMR against any repository locally.
 
 ```
-docker run --rm \
-  -e OPENAI_API_KEY=<your_api_key> \
-  -v $(pwd):/target \
-  prashantjuluri/securemr:latest \
-  python securemr.py /target
+docker run --rm   -e OPENAI_API_KEY=<your_api_key>   -v $(pwd):/target   prashantjuluri/securemr:latest   python securemr.py /target
 ```
+
+The scan results will appear in the console.
 
 ---
 
 # GitHub Actions Setup
 
-Create the file:
+Create the workflow file:
 
-```
-.github/workflows/securemr.yml
-```
+`.github/workflows/securemr.yml`
 
 Example workflow:
 
@@ -120,123 +143,156 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Run SecureMR
         run: |
-          docker run --rm \
-            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
-            -v ${{ github.workspace }}:/target \
-            prashantjuluri/securemr:latest \
-            python securemr.py /target
+          docker run --rm             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}             -v ${{ github.workspace }}:/target             prashantjuluri/securemr:latest             python securemr.py /target
 ```
 
 ---
 
 # GitHub Secrets
 
-Add this secret:
+Add the following secret:
 
-```
-OPENAI_API_KEY
-```
+`OPENAI_API_KEY`
 
 Location:
 
-```
 Repository Settings → Secrets → Actions
+
+GitHub automatically provides the variables SecureMR uses for diff detection:
+
+```
+GITHUB_SHA
+GITHUB_BASE_SHA
+GITHUB_WORKSPACE
 ```
 
 ---
 
 # GitLab CI Setup
 
-Add the following to `.gitlab-ci.yml`.
+Add this job to `.gitlab-ci.yml`.
 
 ```yaml
+stages:
+  - security
+
 securemr_scan:
 
-  stage: test
+  stage: security
 
   image: docker:24
 
   services:
     - docker:24-dind
 
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+
   script:
 
     - echo "Running SecureMR scan"
 
-    - docker run --rm \
-        -e OPENAI_API_KEY=$OPENAI_API_KEY \
-        -e GITLAB_TOKEN=$GITLAB_TOKEN \
-        -e CI_PROJECT_ID=$CI_PROJECT_ID \
-        -e CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID \
-        -e CI_API_V4_URL=$CI_API_V4_URL \
-        -v $CI_PROJECT_DIR:/target \
-        prashantjuluri/securemr:latest \
-        python securemr.py /target
+    - docker run --rm         -e OPENAI_API_KEY=$OPENAI_API_KEY         -e GITLAB_TOKEN=$GITLAB_TOKEN         -e CI_PROJECT_ID=$CI_PROJECT_ID         -e CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID         -e CI_API_V4_URL=$CI_API_V4_URL         -v $CI_PROJECT_DIR:/target         prashantjuluri/securemr:latest         python securemr.py /target
 ```
 
 ---
 
-# GitLab Variables
+# GitLab CI Variables
 
-Add these variables in:
+Configure the following variables in:
 
-```
-GitLab → Settings → CI/CD → Variables
-```
+Project Settings → CI/CD → Variables
+
+Required variables:
 
 ```
 OPENAI_API_KEY
 GITLAB_TOKEN
 ```
 
-The GitLab token allows SecureMR to post findings directly in **Merge Request comments**.
+To allow SecureMR to post findings into Merge Request comments, create a GitLab access token with `api` scope and store it as `GITLAB_TOKEN`.
 
 ---
 
 # Example Output
 
+Example CI output:
+
 ```
 🔒 SecureMR Security Report
 
 File: api/search.py
-Rule: python.sqlalchemy.security.sqlalchemy-execute-raw-query
+Rule: `python.sqlalchemy.security.sqlalchemy-execute-raw-query`
 
 Explanation:
-Raw SQL queries without parameterization allow SQL injection.
+Executing raw SQL queries without parameterization can lead to SQL injection.
 
 Risk Level: HIGH
 
 Suggested Fix:
-Use parameterized queries with SQLAlchemy's query builder.
+Use SQLAlchemy parameterized queries instead of raw SQL strings.
 ```
+
+---
+
+# OpenAI Cost per Pull Request
+
+SecureMR only runs AI analysis on **new vulnerabilities introduced by the PR/MR**.
+
+Typical usage:
+
+| Agent | Model |
+|------|------|
+| Explain | GPT-4o |
+| Risk | GPT-4o-mini |
+| Fix | GPT-4o |
+
+Average usage:
+
+1–3 findings per PR
+
+Typical cost:
+
+< $0.01 per PR
+
+---
+
+# Troubleshooting
+
+### No vulnerabilities reported
+
+Ensure your PR contains code triggering a Semgrep rule.
+
+Example:
+
+```python
+import os
+os.system("ping " + user_input)
+```
+
+### AI analysis disabled
+
+If the `OPENAI_API_KEY` variable is missing:
+
+`[SecureMR] AI disabled (OPENAI_API_KEY not configured)`
+
+Static analysis will still run.
 
 ---
 
 # Roadmap
 
-Planned improvements:
-
-* SARIF output support
-* GitHub Code Scanning integration
-* Additional scanners
-
-  * Trivy
-  * Snyk
-* Multi-language security analysis
-* Cost-optimized AI pipeline
-
----
-
-# Security Philosophy
-
-SecureMR is built around a simple idea:
-
-> Security tools should help developers fix problems, not just detect them.
-
-By combining static analysis with AI explanations, SecureMR makes security findings **understandable and actionable**.
+• SARIF output support  
+• GitHub Code Scanning integration  
+• Container scanning with Trivy  
+• Dependency scanning  
+• Multi-language support  
+• Cost-optimized AI pipeline  
 
 ---
 
@@ -246,12 +302,6 @@ MIT License
 
 ---
 
-# Author
-
-**Prashant Juluri**
-
----
-
 # Contributing
 
-Contributions and feedback are welcome.
+Issues and pull requests are welcome.

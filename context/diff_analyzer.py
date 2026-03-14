@@ -42,7 +42,7 @@ def git(cmd):
         "safe.directory",
         REPO_PATH
     ])
-    
+
     return run(["git", "-C", REPO_PATH] + cmd)
 
 
@@ -157,6 +157,32 @@ def get_changed_files():
                 files = [normalize_path(f) for f in files if f]
 
                 print(f"[SecureMR] Files changed in PR: {files}")
+
+                return files
+            
+            # NEW: handle push events (merge to main)
+            elif "before" in event and "after" in event:
+
+                before = event["before"]
+                after = event["after"]
+
+                print("[SecureMR] GitHub push detected")
+                print(f"[SecureMR] Before SHA: {before}")
+                print(f"[SecureMR] After SHA: {after}")
+
+                git(["fetch", "--all"])
+
+                diff = git([
+                    "diff",
+                    "--name-only",
+                    before,
+                    after
+                ])
+
+                files = diff.splitlines()
+                files = [normalize_path(f) for f in files if f]
+
+                print(f"[SecureMR] Files changed in push: {files}")
 
                 return files
 

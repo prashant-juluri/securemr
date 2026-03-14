@@ -83,8 +83,7 @@ def get_changed_files():
                 diff = git([
                     "diff",
                     "--name-only",
-                    github_base,
-                    github_head
+                    github_base
                 ])
 
                 files = diff.splitlines()

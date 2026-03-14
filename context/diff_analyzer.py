@@ -56,17 +56,11 @@ def get_changed_files():
         print(f"[SecureMR] Base SHA: {gitlab_base}")
         print(f"[SecureMR] Head SHA: {gitlab_head}")
 
-        base_branch = event["pull_request"]["base"]["ref"]
-
-        print(f"[SecureMR] Base branch: {base_branch}")
-
-        git(["fetch", "origin", base_branch])
-
         diff = git([
             "diff",
             "--name-only",
-            f"origin/{base_branch}",
-            "HEAD"
+            github_base,
+            github_head
         ])
 
         files = diff.splitlines()

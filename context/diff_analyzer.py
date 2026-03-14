@@ -2,20 +2,7 @@ import os
 import subprocess
 
 
-REPO_PATH = "/target"
 
-
-def run(cmd):
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    return result.stdout.strip()
-
-
-def git(cmd):
-    return run(["git", "-C", REPO_PATH] + cmd)
-
-
-def normalize_path(path):
-    return os.path.normpath(path)
 
 def get_repo_root():
     """
@@ -32,6 +19,21 @@ def get_repo_root():
             return path
 
     return "/target"
+
+def run(cmd):
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
+def git(cmd):
+    REPO_PATH = get_repo_root()
+    return run(["git", "-C", REPO_PATH] + cmd)
+
+
+def normalize_path(path):
+    return os.path.normpath(path)
+
+
 
 
 def get_changed_files():

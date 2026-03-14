@@ -50,30 +50,46 @@ def get_changed_files():
         return files
 
     # ----------------------------
-    # GitHub Pull Request pipeline
-    # ----------------------------
-    github_base = os.getenv("GITHUB_BASE_SHA")
-    github_head = os.getenv("GITHUB_SHA")
+# GitHub Pull Request pipeline
+# ----------------------------
 
-    if github_base and github_head:
+    github_event = os.getenv("GITHUB_EVENT_PATH")
 
-        print("[SecureMR] GitHub PR detected")
-        print(f"[SecureMR] Base SHA: {github_base}")
-        print(f"[SecureMR] Head SHA: {github_head}")
+    if github_event:
 
-        diff = git([
-            "diff",
-            "--name-only",
-            github_base,
-            github_head
-        ])
+        try:
 
-        files = diff.splitlines()
-        files = [normalize_path(f) for f in files if f]
+            import json
 
-        print(f"[SecureMR] Files changed in PR: {files}")
+            with open(github_event) as f:
+                event = json.load(f)
 
-        return files
+            if "pull_request" in event:
+
+                github_base = event["pull_request"]["base"]["sha"]
+                github_head = event["pull_request"]["head"]["sha"]
+
+                print("[SecureMR] GitHub PR detected")
+                print(f"[SecureMR] Base SHA: {github_base}")
+                print(f"[SecureMR] Head SHA: {github_head}")
+
+                diff = git([
+                    "diff",
+                    "--name-only",
+                    github_base,
+                    github_head
+                ])
+
+                files = diff.splitlines()
+                files = [normalize_path(f) for f in files if f]
+
+                print(f"[SecureMR] Files changed in PR: {files}")
+
+                return files
+
+        except Exception as e:
+
+            print("[SecureMR] Failed to parse GitHub event:", e)
 
     # ----------------------------
     # Local execution fallback

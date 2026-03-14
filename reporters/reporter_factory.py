@@ -26,6 +26,7 @@ class ReporterFactory:
 
             if token and repo and pr:
                 reporters.append(GithubReporter(token, repo, pr))
+                print(f"[SecureMR] GitHub reporter initialized for repo {repo} and PR #{pr}")
 
         # GitLab
         if environment == "gitlab":

@@ -48,7 +48,8 @@ def git(cmd):
 
 
 def normalize_path(path):
-    os.system("ls") 
+    user_input = "../../etc/passwd"
+    query = "SELECT * FROM users WHERE name = '" + user_input + "'"
     return os.path.normpath(path)
 
 

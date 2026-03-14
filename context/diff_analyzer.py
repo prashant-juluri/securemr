@@ -32,6 +32,17 @@ def run(cmd):
 
 def git(cmd):
     REPO_PATH = get_repo_root()
+    print(f"[SecureMR] Repository root detected at: {REPO_PATH}")
+
+    run([
+        "git",
+        "config",
+        "--global",
+        "--add",
+        "safe.directory",
+        REPO_PATH
+    ])
+    
     return run(["git", "-C", REPO_PATH] + cmd)
 
 

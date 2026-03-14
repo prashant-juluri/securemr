@@ -50,11 +50,15 @@ def get_changed_files():
         return files
 
     # ----------------------------
-# GitHub Pull Request pipeline
-# ----------------------------
+    # GitHub Pull Request pipeline
+    # ----------------------------
+    try:
+        print(f"[SecureMR] Fetching GitHub event path keys")
+        github_event = os.getenv("GITHUB_EVENT_PATH")
+        print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")
+    except Exception as e:
+        print(f"[SecureMR] Error accessing GitHub event path: {e}")
 
-    github_event = os.getenv("GITHUB_EVENT_PATH")
-    print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")
 
     if github_event:
 

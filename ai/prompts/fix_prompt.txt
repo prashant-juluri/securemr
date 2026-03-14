@@ -9,9 +9,10 @@ OWASP: $owasp
 File: $file
 Line: $line
 
-Code snippet:
+Code Context:
 
-$snippet
+$context
+
 
 Explanation of vulnerability:
 
@@ -30,5 +31,6 @@ Return ONLY valid JSON in this format:
 
 {
   "fix_description": "clear explanation of the fix",
-  "secure_code_example": "corrected code snippet if applicable"
+  "patched_code": "secure version of the code",
+  "patch_diff": "diff style patch"
 }

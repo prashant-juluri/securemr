@@ -16,25 +16,33 @@ class GitlabReporter(BaseReporter):
 
     def publish(self, report):
 
-        body = format_report(report)
+        body = "## 🔒 SecureMR Security Report\n\n"
 
-        url = f"{self.api_url}/projects/{self.project_id}/merge_requests/{self.mr_iid}/notes"
+        for f in report["findings"]:
 
-        headers = {
-            "PRIVATE-TOKEN": self.token
-        }
+            review = f.get("review", {})
+            explanation = review.get("explanation", {})
+            risk = review.get("risk", {})
+            fix = review.get("fix", {})
 
-        payload = {
-            "body": body
-        }
+            body += f"### File: `{f['file']}`\n"
+            body += f"Rule: `{f['rule']}`\n\n"
 
-        response = requests.post(
-            url,
-            headers=headers,
-            json=payload
-        )
+            if explanation:
+                body += "**Explanation**\n"
+                body += explanation.get("explanation", "") + "\n\n"
 
-        if response.status_code == 201:
-            print("[SecureMR] Comment posted to GitLab MR")
-        else:
-            print("[SecureMR] Failed to post GitLab comment:", response.text)
+            if risk:
+                body += f"**Risk Level:** {risk.get('risk_level','')}\n"
+                body += risk.get("risk_reason", "") + "\n\n"
+
+            if fix:
+                body += "**Suggested Fix**\n"
+                body += fix.get("fix_description","") + "\n\n"
+
+                patch = fix.get("patch_diff")
+
+                if patch:
+                    body += "```diff\n"
+                    body += patch
+                    body += "\n```\n\n"

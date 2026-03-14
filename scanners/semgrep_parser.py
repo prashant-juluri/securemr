@@ -1,4 +1,5 @@
 from models import Finding
+from utils.code_context import get_code_context
 
 
 def parse_semgrep(data):
@@ -44,5 +45,6 @@ def parse_semgrep(data):
         )
 
         findings.append(finding)
-
+        finding.context = get_code_context(finding.file_path, finding.line)
+        
     return findings

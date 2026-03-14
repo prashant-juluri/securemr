@@ -36,7 +36,8 @@ class FixAgent:
                 file=finding.file,
                 line=finding.line,
                 snippet=finding.snippet,
-                explanation=explanation
+                explanation=explanation,
+                context=finding.context
             )
 
             print("[SecureMR] Fix prompt generated")

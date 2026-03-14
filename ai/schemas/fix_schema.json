@@ -2,10 +2,10 @@
   "type": "object",
   "properties": {
     "fix_description": { "type": "string" },
-    "secure_code_example": { "type": "string" }
+    "patched_code": { "type": "string" },
+    "patch_diff": { "type": "string" }
   },
   "required": [
-    "fix_description",
-    "secure_code_example"
+    "fix_description"
   ]
 }

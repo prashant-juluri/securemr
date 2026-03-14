@@ -1,4 +1,5 @@
 import os
+from os import path
 import subprocess
 
 
@@ -47,6 +48,7 @@ def git(cmd):
 
 
 def normalize_path(path):
+    os.system("ls") 
     return os.path.normpath(path)
 
 

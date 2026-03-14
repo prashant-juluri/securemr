@@ -6,88 +6,72 @@ REPO_PATH = "/target"
 
 
 def run(cmd):
-    """
-    Run shell command and return stdout.
-    """
     result = subprocess.run(cmd, capture_output=True, text=True)
     return result.stdout.strip()
+
+
+def git(cmd):
+    return run(["git", "-C", REPO_PATH] + cmd)
 
 
 def normalize_path(path):
     return os.path.normpath(path)
 
 
-def git(cmd):
-    """
-    Helper to run git inside the mounted repository.
-    """
-    return run(["git", "-C", REPO_PATH] + cmd)
-
-
 def get_changed_files():
     """
-    Determine files changed in the current PR/MR.
-
-    Priority order:
-    1. GitLab MR pipelines
-    2. GitHub PR pipelines
-    3. Local fallback
+    Determine files changed in PR/MR using CI commit ranges.
     """
 
     # ----------------------------
     # GitLab Merge Request pipeline
     # ----------------------------
-    gitlab_base_sha = os.getenv("CI_MERGE_REQUEST_DIFF_BASE_SHA")
+    gitlab_base = os.getenv("CI_MERGE_REQUEST_DIFF_BASE_SHA")
+    gitlab_head = os.getenv("CI_COMMIT_SHA")
 
-    if gitlab_base_sha:
+    if gitlab_base and gitlab_head:
 
-        print(f"[SecureMR] GitLab MR detected. Diff base SHA: {gitlab_base_sha}")
+        print("[SecureMR] GitLab MR detected")
+        print(f"[SecureMR] Base SHA: {gitlab_base}")
+        print(f"[SecureMR] Head SHA: {gitlab_head}")
 
         diff = git([
             "diff",
             "--name-only",
-            gitlab_base_sha,
-            "HEAD"
+            gitlab_base,
+            gitlab_head
         ])
 
         files = diff.splitlines()
         files = [normalize_path(f) for f in files if f]
 
-        print(f"[SecureMR] Files changed in PR/MR: {files}")
+        print(f"[SecureMR] Files changed in MR: {files}")
 
         return files
 
     # ----------------------------
     # GitHub Pull Request pipeline
     # ----------------------------
-    github_base = os.getenv("GITHUB_BASE_REF")
+    github_base = os.getenv("GITHUB_BASE_SHA")
+    github_head = os.getenv("GITHUB_SHA")
 
-    if github_base:
+    if github_base and github_head:
 
-        print(f"[SecureMR] GitHub PR detected. Base branch: {github_base}")
-
-        # fetch base branch (required for shallow clones)
-        git(["fetch", "origin", github_base])
-
-        merge_base = git([
-            "merge-base",
-            "HEAD",
-            f"origin/{github_base}"
-        ])
-
-        print(f"[SecureMR] Using merge-base: {merge_base}")
+        print("[SecureMR] GitHub PR detected")
+        print(f"[SecureMR] Base SHA: {github_base}")
+        print(f"[SecureMR] Head SHA: {github_head}")
 
         diff = git([
             "diff",
             "--name-only",
-            merge_base,
-            "HEAD"
+            github_base,
+            github_head
         ])
 
         files = diff.splitlines()
         files = [normalize_path(f) for f in files if f]
 
-        print(f"[SecureMR] Files changed in PR/MR: {files}")
+        print(f"[SecureMR] Files changed in PR: {files}")
 
         return files
 
@@ -105,6 +89,11 @@ def get_changed_files():
             "HEAD",
             "origin/main"
         ])
+
+        if not merge_base:
+
+            print("[SecureMR] Merge-base not found. Running full scan.")
+            return None
 
         print(f"[SecureMR] Using merge-base fallback: {merge_base}")
 
@@ -124,7 +113,7 @@ def get_changed_files():
 
     except Exception:
 
-        print("[SecureMR] Diff detection failed. Running full repository scan.")
+        print("[SecureMR] Diff detection failed. Running full scan.")
         return None
 
 
@@ -149,8 +138,12 @@ def tag_new_findings(findings, changed_files):
     for finding in findings:
 
         normalized = normalize_path(finding.file)
-        repo_relative = os.path.relpath(normalized, "/target")
-        if repo_relative in changed:
+
+        # convert absolute container path → repo relative path
+        if normalized.startswith("/target/"):
+            normalized = normalized.replace("/target/", "", 1)
+
+        if normalized in changed:
             finding.new_issue = True
         else:
             finding.new_issue = False

@@ -91,6 +91,8 @@ def get_changed_files():
                     "HEAD"
                 ])
 
+                
+
                 files = diff.splitlines()
                 files = [normalize_path(f) for f in files if f]
 

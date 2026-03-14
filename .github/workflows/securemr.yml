@@ -16,12 +16,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Build SecureMR container
         run: |
           docker build -t securemr .
-          
+
 
       - name: Run SecureMR on repository
         run: |

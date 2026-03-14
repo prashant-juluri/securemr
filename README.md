@@ -181,6 +181,7 @@ Add this job to `.gitlab-ci.yml`.
 stages:
   - security
 
+
 securemr_scan:
 
   stage: security
@@ -192,12 +193,46 @@ securemr_scan:
 
   variables:
     DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+
+  rules:
+    # Run on merge request pipelines
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+    # Run on pushes to main
+    - if: $CI_COMMIT_BRANCH == "main"
+
+    # Allow manual execution
+    - when: manual
+
+
+  before_script:
+
+    - echo "Starting SecureMR security scan"
+    - docker version
+
 
   script:
+  - echo "Running SecureMR scan"
+  - docker pull prashantjuluri/securemr:latest
+  - git remote -v
+  - git config --get remote.origin.url
+  - |
+    docker run --rm \
+    -e GITLAB_CI=$GITLAB_CI \
+    -e OPENAI_API_KEY=$OPENAI_API_KEY \
+    -e GITLAB_TOKEN=$GITLAB_TOKEN \
+    -e CI_PROJECT_ID=$CI_PROJECT_ID \
+    -e CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID \
+    -e CI_API_V4_URL=$CI_API_V4_URL \
+    -e CI_MERGE_REQUEST_TARGET_BRANCH_NAME=$CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
+    -e CI_MERGE_REQUEST_DIFF_BASE_SHA=$CI_MERGE_REQUEST_DIFF_BASE_SHA \
+    -v $CI_PROJECT_DIR:/target \
+    prashantjuluri/securemr:latest \
+    python securemr.py /target
 
-    - echo "Running SecureMR scan"
 
-    - docker run --rm         -e OPENAI_API_KEY=$OPENAI_API_KEY         -e GITLAB_TOKEN=$GITLAB_TOKEN         -e CI_PROJECT_ID=$CI_PROJECT_ID         -e CI_MERGE_REQUEST_IID=$CI_MERGE_REQUEST_IID         -e CI_API_V4_URL=$CI_API_V4_URL         -v $CI_PROJECT_DIR:/target         prashantjuluri/securemr:latest         python securemr.py /target
+  allow_failure: false
 ```
 
 ---

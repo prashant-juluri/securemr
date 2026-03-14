@@ -32,8 +32,8 @@ def get_changed_files():
     if gitlab_base and gitlab_head:
 
         print("[SecureMR] GitLab MR detected")
-        print("[SecureMR] Base SHA: {gitlab_base}")
-        print("[SecureMR] Head SHA: {gitlab_head}")
+        print(f"[SecureMR] Base SHA: {gitlab_base}")
+        print(f"[SecureMR] Head SHA: {gitlab_head}")
 
         diff = git([
             "diff",
@@ -75,8 +75,8 @@ def get_changed_files():
                 github_head = event["pull_request"]["head"]["sha"]
 
                 print("[SecureMR] GitHub PR detected")
-                print("[SecureMR] Base SHA: {github_base}")
-                print("[SecureMR] Head SHA: {github_head}")
+                print(f"[SecureMR] Base SHA: {github_base}")
+                print(f"[SecureMR] Head SHA: {github_head}")
 
                 diff = git([
                     "diff",
@@ -94,7 +94,7 @@ def get_changed_files():
 
         except Exception as e:
 
-            print("[SecureMR] Failed to parse GitHub event:", e)
+            print(f"[SecureMR] Failed to parse GitHub event: {e}")
 
     # ----------------------------
     # Local execution fallback

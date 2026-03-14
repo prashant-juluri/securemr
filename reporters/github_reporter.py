@@ -10,11 +10,24 @@ class GithubReporter(BaseReporter):
 
         self.token = os.getenv("GITHUB_TOKEN")
         self.repo = os.getenv("GITHUB_REPOSITORY")
+        event_path = os.getenv("GITHUB_EVENT_PATH")
 
-        with open(os.getenv("GITHUB_EVENT_PATH")) as f:
-            event = json.load(f)
+        if event_path and os.path.exists(event_path):
 
-        self.pr_number = event["pull_request"]["number"]
+            try:
+                with open(event_path) as f:
+                    event = json.load(f)
+
+                print("[SecureMR] GitHub event loaded")
+
+            except Exception as e:
+                print(f"[SecureMR] Failed to parse GitHub event: {e}")
+                event = None
+
+        else:
+            event = None
+
+        self.pr_number = event["pull_request"]["number"] if event else None
 
 
     def publish(self, report):

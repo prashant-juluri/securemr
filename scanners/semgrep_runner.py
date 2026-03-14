@@ -16,6 +16,8 @@ def run_semgrep(target_path="."):
     "--config=p/dockerfile",
     "--config=p/supply-chain",
     "--config=p/owasp-top-ten",
+    "--config=p/r2c-bug-scan",
+    "--config=p/gitleaks",
     "--no-git-ignore",
     "--metrics=off",
     "--timeout=0",

@@ -1,36 +1,21 @@
 import requests
-import os
-import json
+
 from reporters.base_reporter import BaseReporter
 
 
 class GithubReporter(BaseReporter):
 
-    def __init__(self):
+    def __init__(self, token, repo, pr_number):
 
-        self.token = os.getenv("GITHUB_TOKEN")
-        self.repo = os.getenv("GITHUB_REPOSITORY")
-        event_path = os.getenv("GITHUB_EVENT_PATH")
-
-        if event_path and os.path.exists(event_path):
-
-            try:
-                with open(event_path) as f:
-                    event = json.load(f)
-
-                print("[SecureMR] GitHub event loaded")
-
-            except Exception as e:
-                print(f"[SecureMR] Failed to parse GitHub event: {e}")
-                event = None
-
-        else:
-            event = None
-
-        self.pr_number = event["pull_request"]["number"] if event else None
-
+        self.token = token
+        self.repo = repo
+        self.pr_number = pr_number
 
     def publish(self, report):
+
+        if not self.pr_number:
+            print("[SecureMR] No PR number detected. Skipping GitHub comment.")
+            return
 
         try:
 
@@ -58,7 +43,7 @@ class GithubReporter(BaseReporter):
 
                 if fix:
                     body += "**Suggested Fix**\n"
-                    body += fix.get("fix_description","") + "\n\n"
+                    body += fix.get("fix_description", "") + "\n\n"
 
                     patch = fix.get("patch_diff")
 

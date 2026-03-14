@@ -15,6 +15,7 @@ def run_semgrep(target_path="."):
     "--config=p/secrets",
     "--config=p/dockerfile",
     "--config=p/supply-chain",
+    "--config=p/owasp-top-ten",
     "--no-git-ignore",
     "--metrics=off",
     "--timeout=0",

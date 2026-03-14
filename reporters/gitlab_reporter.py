@@ -15,8 +15,11 @@ class GitlabReporter(BaseReporter):
 
 
     def publish(self, report):
+
         try:
-            print(f"[SecureMR] Publishing GitLab report) to project {self.project_id}, MR !{self.mr_iid}")
+
+            print(f"[SecureMR] Publishing GitLab report to project {self.project_id}, MR !{self.mr_iid}")
+
             body = "## 🔒 SecureMR Security Report\n\n"
 
             for f in report["findings"]:
@@ -48,6 +51,34 @@ class GitlabReporter(BaseReporter):
                         body += patch
                         body += "\n```\n\n"
 
+        except Exception as e:
+
+            print(f"[SecureMR] Error formatting GitLab report: {e}")
+            body = "SecureMR failed to format the security report."
+
+        try:
+
+            url = f"{self.api_url}/projects/{self.project_id}/merge_requests/{self.mr_iid}/notes"
+
+            headers = {
+                "PRIVATE-TOKEN": self.token,
+                "Content-Type": "application/json"
+            }
+
+            payload = {
+                "body": body
+            }
+
+            print("[SecureMR] Posting comment to GitLab MR")
+
+            response = requests.post(url, headers=headers, json=payload)
+
+            if response.status_code == 201:
+                print("[SecureMR] Comment posted to GitLab MR")
+
+            else:
+                print("[SecureMR] Failed to post GitLab comment:", response.text)
 
         except Exception as e:
-            print(f"[SecureMR] Error formatting GitLab report: {e}")
+
+            print("[SecureMR] GitLab API call failed:", str(e))

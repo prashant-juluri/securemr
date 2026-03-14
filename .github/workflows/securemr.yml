@@ -21,24 +21,6 @@ jobs:
           docker build -t securemr .
 
       - name: Run SecureMR on repository
-        name: SecureMR
-
-on:
-  pull_request:
-
-jobs:
-
-  security:
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run SecureMR
         run: |
           docker run --rm \
             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \

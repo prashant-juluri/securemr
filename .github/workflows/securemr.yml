@@ -31,5 +31,5 @@ jobs:
             -e GITHUB_REPOSITORY=${{ github.repository }} \
             -e GITHUB_EVENT_PATH=${{ github.event_path }} \
             -v ${{ github.workspace }}:/target \
-            prashantjuluri/securemr:latest \
+            securemr \
             python securemr.py /target

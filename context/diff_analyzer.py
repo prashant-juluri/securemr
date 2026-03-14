@@ -74,6 +74,7 @@ def get_changed_files():
     # GitHub Pull Request pipeline
     # ----------------------------
     try:
+        print(git(["branch", "-a"]))
         print(f"[SecureMR] Fetching GitHub event path keys")
         github_event = os.getenv("GITHUB_EVENT_PATH")
         #print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")

@@ -6,7 +6,7 @@ from reporters.base_reporter import BaseReporter
 class GithubReporter(BaseReporter):
 
     def __init__(self, token, repo, pr_number):
-
+        print(f"[SecureMR] Initializing GitHubReporter with repo: {repo}, PR: {pr_number}")
         self.token = token
         self.repo = repo
         self.pr_number = pr_number

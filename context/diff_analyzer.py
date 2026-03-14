@@ -13,6 +13,10 @@ def search_users(user_input):
 
     cursor.execute(query)
 
+
+
+    
+
     return cursor.fetchall()
 
 def get_repo_root():

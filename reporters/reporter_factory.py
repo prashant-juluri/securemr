@@ -22,10 +22,28 @@ class ReporterFactory:
 
             token = os.getenv("GITHUB_TOKEN")
             repo = os.getenv("GITHUB_REPOSITORY")
-            pr = os.getenv("PR_NUMBER")
 
-            if token and repo and pr:
-                reporters.append(GithubReporter(token, repo, pr))
+            import json
+            event_path = os.getenv("GITHUB_EVENT_PATH")
+
+            pr = None
+
+        if event_path and os.path.exists(event_path):
+
+            with open(event_path) as f:
+                event = json.load(f)
+
+            if "pull_request" in event:
+                pr = event["pull_request"]["number"]
+
+        if token and repo and pr:
+            print(f"[SecureMR] GitHub env check:")
+            print(f"  token present: {bool(token)}")
+            print(f"  repo: {repo}")
+            print(f"  pr: {pr}")
+
+            reporters.append(GithubReporter(token, repo, pr))
+            print(f"[SecureMR] GitHub reporter initialized for repo {repo} and PR #{pr}")
 
         # GitLab
         if environment == "gitlab":

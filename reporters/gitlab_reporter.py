@@ -16,7 +16,7 @@ class GitlabReporter(BaseReporter):
 
     def publish(self, report):
         try:
-            print(f"[SecureMR] Publishing GitLab report: {e}")
+            print(f"[SecureMR] Publishing GitLab report) to project {self.project_id}, MR !{self.mr_iid}")
             body = "## 🔒 SecureMR Security Report\n\n"
 
             for f in report["findings"]:

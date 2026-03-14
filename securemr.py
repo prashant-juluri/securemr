@@ -80,6 +80,9 @@ def load_findings(target_path):
 def main():
 
     print("[SecureMR] Starting analysis")
+    reporters = ReporterFactory.create()
+
+    aggregator = ReviewAggregator()
 
     # Accept target path from CLI
     target_path = sys.argv[1] if len(sys.argv) > 1 else "."
@@ -92,9 +95,7 @@ def main():
 
     pipeline = initialize_ai_pipeline()
 
-    reporters = ReporterFactory.create()
-
-    aggregator = ReviewAggregator()
+    
 
     reviews = []
 

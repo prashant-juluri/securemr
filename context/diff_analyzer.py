@@ -65,6 +65,8 @@ def get_changed_files():
         try:
 
             import json
+            print("[SecureMR] Git working directory test:")
+            print(git(["-C", "/target", "status"]))
 
             with open(github_event) as f:
                 event = json.load(f)
@@ -82,9 +84,11 @@ def get_changed_files():
 
                 base_branch = event["pull_request"]["base"]["ref"]
 
-                git(["fetch", "origin", base_branch])
+                git(["-C", "/target", "fetch", "origin", base_branch])
 
                 diff = git([
+                    "-C",
+                    "/target",
                     "diff",
                     "--name-only",
                     f"origin/{base_branch}",

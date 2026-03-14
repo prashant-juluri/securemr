@@ -17,6 +17,22 @@ def git(cmd):
 def normalize_path(path):
     return os.path.normpath(path)
 
+def get_repo_root():
+    """
+    Detect the Git repository root inside the container.
+    """
+
+    if os.path.exists("/target/.git"):
+        return "/target"
+
+    for item in os.listdir("/target"):
+        path = os.path.join("/target", item)
+
+        if os.path.isdir(path) and os.path.exists(os.path.join(path, ".git")):
+            return path
+
+    return "/target"
+
 
 def get_changed_files():
     """
@@ -28,6 +44,9 @@ def get_changed_files():
     # ----------------------------
     gitlab_base = os.getenv("CI_MERGE_REQUEST_DIFF_BASE_SHA")
     gitlab_head = os.getenv("CI_COMMIT_SHA")
+
+    repo_root = get_repo_root()
+    print(f"[SecureMR] Repository root detected at: {repo_root}")   
 
     if gitlab_base and gitlab_head:
 
@@ -66,7 +85,7 @@ def get_changed_files():
 
             import json
             print("[SecureMR] Git working directory test:")
-            print(git(["-C", "/target", "status"]))
+            print(git(["-C", repo_root, "status"]))
 
             with open(github_event) as f:
                 event = json.load(f)
@@ -84,11 +103,11 @@ def get_changed_files():
 
                 base_branch = event["pull_request"]["base"]["ref"]
 
-                git(["-C", "/target", "fetch", "origin", base_branch])
+                git(["-C", repo_root, "fetch", "origin", base_branch])
 
                 diff = git([
                     "-C",
-                    "/target",
+                    repo_root,
                     "diff",
                     "--name-only",
                     f"origin/{base_branch}",

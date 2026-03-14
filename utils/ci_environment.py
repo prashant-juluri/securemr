@@ -11,7 +11,7 @@ class CIEnvironment:
             return "github"
 
         # GitLab CI
-        if os.getenv("GITLAB_CI"):
+        if os.getenv("CI_MERGE_REQUEST_IID"):
             return "gitlab"
 
         # Generic CI (Jenkins, CircleCI etc.)

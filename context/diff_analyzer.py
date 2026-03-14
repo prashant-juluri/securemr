@@ -55,7 +55,7 @@ def get_changed_files():
     try:
         print(f"[SecureMR] Fetching GitHub event path keys")
         github_event = os.getenv("GITHUB_EVENT_PATH")
-        print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")
+        #print(f"[SecureMR] GitHub event path keys: {github_event.keys() if github_event else 'N/A'}")
     except Exception as e:
         print(f"[SecureMR] Error accessing GitHub event path: {e}")
 
@@ -68,6 +68,8 @@ def get_changed_files():
 
             with open(github_event) as f:
                 event = json.load(f)
+
+            print(f"[SecureMR] GitHub event loaded: {event.keys()}")
 
             if "pull_request" in event:
 

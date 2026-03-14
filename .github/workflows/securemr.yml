@@ -21,6 +21,7 @@ jobs:
       - name: Build SecureMR container
         run: |
           docker build -t securemr .
+          
 
       - name: Run SecureMR on repository
         run: |
@@ -29,7 +30,8 @@ jobs:
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             -e GITHUB_ACTIONS=true \
             -e GITHUB_REPOSITORY=${{ github.repository }} \
-            -e GITHUB_EVENT_PATH=${{ github.event_path }} \
+            -e GITHUB_EVENT_PATH=/event.json \
             -v ${{ github.workspace }}:/target \
+            -v ${{ github.event_path }}:/event.json \
             securemr \
             python securemr.py /target

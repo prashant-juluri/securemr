@@ -6,14 +6,11 @@ import os
 
 def run_semgrep(target_path="."):
 
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as tmp_file:
-        output_path = tmp_file.name
-    # The temporary file is created and will persist after closing due to delete=False
-    # We will manually delete it after reading the results
-
-    # The temporary file is now closed but still exists on disk
-
-    
+    tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
+    output_path = tmp_file.name
+    tmp_file.write(b"{}")  # Write empty JSON to initialize the file
+    tmp_file.flush()  # Ensure the file is flushed
+    tmp_file.close()  # Close the file handle so semgrep can write to it
 
     try:
         cmd = [

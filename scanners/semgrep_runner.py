@@ -8,6 +8,7 @@ def run_semgrep(target_path="."):
 
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
     output_path = tmp_file.name
+    tmp_file.flush()  # Ensure the file is flushed
     tmp_file.close()  # Close the file handle so semgrep can write to it
 
     try:

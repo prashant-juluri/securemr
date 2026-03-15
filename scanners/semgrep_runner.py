@@ -8,43 +8,47 @@ def run_semgrep(target_path="."):
 
     tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".json")
     output_path = tmp_file.name
-
-    cmd = [
-    "semgrep",
-    "--config=p/default",
-    "--config=p/secrets",
-    "--config=p/dockerfile",
-    "--config=p/supply-chain",
-    "--config=p/owasp-top-ten",
-    "--config=p/r2c-bug-scan",
-    "--config=p/gitleaks",
-    "--no-git-ignore",
-    "--metrics=off",
-    "--timeout=0",
-    "--optimizations=all",
-    "--json",
-    "--output", output_path,
-    target_path
-    ]
-
-    print(f"[SecureMR] Executing Semgrep on {target_path}")
+    tmp_file.close()  # Close the file handle so semgrep can write to it
 
     try:
-        subprocess.run(cmd, check=False)
-    except Exception as e:
-        print(f"[SecureMR] Failed to execute Semgrep: {e}")
-        return {"results": []}
+        cmd = [
+        "semgrep",
+        "--config=p/default",
+        "--config=p/secrets",
+        "--config=p/dockerfile",
+        "--config=p/supply-chain",
+        "--config=p/owasp-top-ten",
+        "--config=p/r2c-bug-scan",
+        "--config=p/gitleaks",
+        "--no-git-ignore",
+        "--metrics=off",
+        "--timeout=0",
+        "--optimizations=all",
+        "--json",
+        "--output", output_path,
+        target_path
+        ]
 
-    try:
-        with open(output_path) as f:
-            data = json.load(f)
-    except Exception:
-        print("[SecureMR] Failed to parse Semgrep output")
-        data = {"results": []}
+        print(f"[SecureMR] Executing Semgrep on {target_path}")
 
-    try:
-        os.remove(output_path)
-    except Exception:
-        pass
+        try:
+            subprocess.run(cmd, check=False)
+        except Exception as e:
+            print(f"[SecureMR] Failed to execute Semgrep: {e}")
+            return {"results": []}
 
-    return data
+        try:
+            with open(output_path) as f:
+                data = json.load(f)
+        except Exception:
+            print("[SecureMR] Failed to parse Semgrep output")
+            data = {"results": []}
+
+        return data
+
+    finally:
+        # Ensure the temporary file is always deleted
+        try:
+            os.remove(output_path)
+        except OSError:
+            pass  # File may have already been deleted or inaccessible

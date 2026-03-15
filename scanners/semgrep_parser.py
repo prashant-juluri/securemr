@@ -44,7 +44,10 @@ def parse_semgrep(data):
             snippet=snippet
         )
 
+        print("[SecureMR] Snippet sent to LLM:")
+        print(finding.snippet)
+
         findings.append(finding)
         finding.context = get_code_context(finding.file_path, finding.line)
-        
+
     return findings

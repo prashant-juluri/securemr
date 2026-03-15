@@ -48,6 +48,6 @@ def parse_semgrep(data):
         print(finding.snippet)
 
         findings.append(finding)
-        finding.context = get_code_context(finding.file_path, finding.line)
+        finding.context = get_code_context(finding.file_path, finding.line, radius=50)
 
     return findings

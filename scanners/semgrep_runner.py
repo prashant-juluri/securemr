@@ -9,6 +9,7 @@ def run_semgrep(target_path="."):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".json") as tmp_file:
         output_path = tmp_file.name
         tmp_file.flush()  # Ensure any buffered data is written
+        tmp_file.close()  # Explicitly close the file handle
 
     # The temporary file is now closed but still exists on disk
 

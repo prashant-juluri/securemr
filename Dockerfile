@@ -17,5 +17,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install semgrep
 RUN pip install semgrep
 
+# Create a non-root user
+RUN useradd --create-home --shell /bin/bash securemr-user && \
+    chown -R securemr-user:securemr-user /app
+
+# Switch to non-root user
+USER securemr-user
+
 # Default command
 CMD ["python", "securemr.py"]

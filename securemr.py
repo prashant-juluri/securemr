@@ -23,10 +23,6 @@ from config import OPENAI_API_KEY
 
 def initialize_ai_pipeline():
 
-    if not OPENAI_API_KEY:
-        print("[SecureMR] AI disabled (OPENAI_API_KEY not configured)")
-        return None
-
     provider = ProviderFactory.create()
     llm = LLMAdapter(provider)
 

@@ -2,7 +2,7 @@
   "type": "object",
   "properties": {
     "fix_description": { "type": "string" },
-    "patched_code": { "type": "string" },
+    "secure_code_example": { "type": "string" },
     "patch_diff": { "type": "string" }
   },
   "required": [

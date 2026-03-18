@@ -16,3 +16,6 @@ venv/
 
 # test artifacts
 .test/
+
+# AI models for local testing
+models/*

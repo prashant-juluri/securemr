@@ -3,26 +3,37 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    cmake \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Fix git safe directory issue in CI containers
+# Fix git safe directory issue
 RUN git config --global --add safe.directory /app
 
 # Copy project files
 COPY . .
 
-# Install Python dependencies
+# 🔥 Download model during build
+RUN mkdir -p /models && \
+    curl -L -o /models/qwen-coder.gguf \
+    https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf
+
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install semgrep
-RUN pip install semgrep
+RUN pip install --no-cache-dir semgrep
 
-# Create a non-root user
+# Create non-root user
 RUN useradd --create-home --shell /bin/bash securemr-user && \
     chown -R securemr-user:securemr-user /app
 
-# Switch to non-root user
 USER securemr-user
 
-# Default command
 CMD ["python", "securemr.py"]

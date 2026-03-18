@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from string import Template
 from config import AI_MODELS
-from ai.json_utils import parse_and_validate
+from ai.json_utils import parse_and_validate, safe_parse
 
 
 PROMPT_PATH = Path(__file__).parent / "prompts/explain_prompt.txt"
@@ -42,6 +42,11 @@ class ExplainAgent:
                 model=AI_MODELS["explain"]
             )
 
+            if isinstance(response, dict):
+                parsed = response
+            else:
+                parsed = safe_parse(response)
+
         except Exception as e:
             print("[SecureMR] ExplainAgent failed to generate response:", str(e))
             raise e
@@ -49,4 +54,4 @@ class ExplainAgent:
 
         #print("[SecureMR] Explain LLM raw response:", response)
 
-        return parse_and_validate(response, self.schema)
+        return parse_and_validate(parsed, self.schema)

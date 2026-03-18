@@ -4,7 +4,7 @@ from pathlib import Path
 from string import Template
 
 from config import AI_MODELS
-from ai.json_utils import parse_and_validate
+from ai.json_utils import parse_and_validate, safe_parse
 
 
 PROMPT_PATH = Path(__file__).parent / "prompts/fix_prompt.txt"
@@ -48,8 +48,12 @@ class FixAgent:
             )
 
             #print("[SecureMR] Fix LLM raw response:", response)
+            if isinstance(response, dict):
+                parsed = response
+            else:
+                parsed = safe_parse(response)
 
-            return parse_and_validate(response, self.schema)
+            return parse_and_validate(parsed, self.schema)
 
         except Exception as e:
 

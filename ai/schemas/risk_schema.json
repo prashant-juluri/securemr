@@ -2,10 +2,10 @@
   "type": "object",
   "properties": {
     "risk_level": { "type": "string" },
-    "risk_reasoning": { "type": "string" }
+    "risk_reason": { "type": "string" }
   },
   "required": [
     "risk_level",
-    "risk_reasoning"
+    "risk_reason"
   ]
 }

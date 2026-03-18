@@ -16,17 +16,14 @@ from ai.review_aggregator import ReviewAggregator
 
 from reporters.reporter_factory import ReporterFactory
 from security.baseline import mark_new_findings, save_baseline
+from llm.provider_factory import ProviderFactory
 
 from config import OPENAI_API_KEY
 
 
 def initialize_ai_pipeline():
 
-    if not OPENAI_API_KEY:
-        print("[SecureMR] AI disabled (OPENAI_API_KEY not configured)")
-        return None
-
-    provider = OpenAIProvider(api_key=OPENAI_API_KEY)
+    provider = ProviderFactory.create()
     llm = LLMAdapter(provider)
 
     print("[SecureMR] AI analysis enabled")

@@ -1,6 +1,5 @@
 from llama_cpp import Llama
-import json
-import re
+from ai.json_utils import safe_parse
 
 
 
@@ -17,26 +16,7 @@ class LocalProvider:
         )
 
     def _safe_parse(self, text):
-    
-        # First attempt
-        try:
-            return json.loads(text)
-        except:
-            pass
-
-        # Extract JSON block
-        matches = re.findall(r"\{.*?\}", text, re.DOTALL)
-
-        for m in matches[::-1]:  # try last JSON first
-            try:
-                return json.loads(m)
-            except:
-                continue
-
-        return {
-            "error": "parse_failed",
-            "raw": text
-        }
+        return safe_parse(text)
 
     def generate(self, prompt, model=None):
 
@@ -53,7 +33,7 @@ class LocalProvider:
             ]
         )
 
-        text = response["choices"][0]["text"].strip()
+        text = response["choices"][0]["text"]
 
         # 🔥 HARD CLEAN (this is what you're missing)
         text = (
@@ -61,7 +41,6 @@ class LocalProvider:
                 .replace("```", "")
                 .replace("<|im_start|>", "")
                 .replace("<|im_end|>", "")
-                .strip()
         )
 
         return self._safe_parse(text)

@@ -31,6 +31,6 @@ Return ONLY valid JSON in this format:
 
 {
   "fix_description": "clear explanation of the fix",
-  "patched_code": "secure version of the code",
+  "secure_code_example": "secure version of the code",
   "patch_diff": "diff style patch"
 }

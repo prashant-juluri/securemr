@@ -4,4 +4,4 @@ semgrep
 python-dotenv
 jsonschema
 requests
-llama-cpp-python>=0.2.90
+llama-cpp-python==0.3.16 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu

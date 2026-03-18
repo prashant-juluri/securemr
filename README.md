@@ -136,6 +136,11 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
   security-scan:
 
@@ -148,8 +153,25 @@ jobs:
 
       - name: Run SecureMR
         run: |
-          docker run --rm             -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}             -v ${{ github.workspace }}:/target             prashantjuluri/securemr:latest             python securemr.py /target
+          docker run --rm \
+            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
+            -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+            -e GITHUB_ACTIONS=true \
+            -e GITHUB_REPOSITORY=${{ github.repository }} \
+            -e GITHUB_EVENT_PATH=/event.json \
+            -e GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha }} \
+            -e GITHUB_SHA=${{ github.event.pull_request.head.sha }} \
+            -v ${{ github.workspace }}:/target \
+            -v ${{ github.event_path }}:/event.json \
+            prashantjuluri/securemr:latest \
+            python securemr.py /target
 ```
+
+Notes:
+
+• `fetch-depth: 0` is important. Without full git history, diff detection may fall back to a full repository scan.  
+• `GITHUB_TOKEN`, `GITHUB_EVENT_PATH`, `GITHUB_REPOSITORY`, `GITHUB_BASE_SHA`, and `GITHUB_SHA` must be passed into the container explicitly. GitHub sets them for the runner, not automatically for `docker run`.  
+• PR comments require the `pull-requests: write` and `issues: write` permissions shown above.
 
 ---
 
@@ -163,13 +185,22 @@ Location:
 
 Repository Settings → Secrets → Actions
 
-GitHub automatically provides the variables SecureMR uses for diff detection:
+GitHub also provides a default `GITHUB_TOKEN`, but you still need to pass it into the container as shown above if you want SecureMR to post PR comments.
+
+SecureMR uses these GitHub values inside the container:
 
 ```
 GITHUB_SHA
 GITHUB_BASE_SHA
+GITHUB_REPOSITORY
+GITHUB_EVENT_PATH
 GITHUB_WORKSPACE
 ```
+
+For pull request workflows, set:
+
+• `GITHUB_BASE_SHA` to `${{ github.event.pull_request.base.sha }}`  
+• `GITHUB_SHA` to `${{ github.event.pull_request.head.sha }}`
 
 ---
 
@@ -194,6 +225,7 @@ securemr_scan:
   variables:
     DOCKER_TLS_CERTDIR: ""
     DOCKER_DRIVER: overlay2
+    GIT_DEPTH: "0"
 
   rules:
     # Run on merge request pipelines
@@ -227,6 +259,7 @@ securemr_scan:
     -e CI_API_V4_URL=$CI_API_V4_URL \
     -e CI_MERGE_REQUEST_TARGET_BRANCH_NAME=$CI_MERGE_REQUEST_TARGET_BRANCH_NAME \
     -e CI_MERGE_REQUEST_DIFF_BASE_SHA=$CI_MERGE_REQUEST_DIFF_BASE_SHA \
+    -e CI_COMMIT_SHA=$CI_COMMIT_SHA \
     -v $CI_PROJECT_DIR:/target \
     prashantjuluri/securemr:latest \
     python securemr.py /target
@@ -234,6 +267,13 @@ securemr_scan:
 
   allow_failure: false
 ```
+
+Notes:
+
+• `GIT_DEPTH: "0"` helps ensure the merge request base commit is available for diff detection.  
+• `CI_COMMIT_SHA` must be passed into the container. SecureMR uses it together with `CI_MERGE_REQUEST_DIFF_BASE_SHA` to detect changed files.  
+• Merge request comments require `CI_MERGE_REQUEST_IID`, `CI_API_V4_URL`, `CI_PROJECT_ID`, and `GITLAB_TOKEN`.  
+• Push or manual pipelines can still run SecureMR, but MR comments and MR-specific diff detection only work on merge request pipelines.
 
 ---
 
@@ -310,13 +350,25 @@ import os
 os.system("ping " + user_input)
 ```
 
-### AI analysis disabled
+### Full repository scan instead of PR/MR-only scan
 
-If the `OPENAI_API_KEY` variable is missing:
+If SecureMR cannot find the base commit inside CI, it falls back to a full repository scan.
 
-`[SecureMR] AI disabled (OPENAI_API_KEY not configured)`
+To avoid that:
 
-Static analysis will still run.
+• In GitHub Actions, use `fetch-depth: 0` and pass `GITHUB_BASE_SHA` plus the PR head SHA into the container.  
+• In GitLab CI, set `GIT_DEPTH: "0"` and pass both `CI_MERGE_REQUEST_DIFF_BASE_SHA` and `CI_COMMIT_SHA` into the container.
+
+### No PR/MR comment posted
+
+Check the workflow variables and permissions:
+
+• GitHub requires `GITHUB_TOKEN`, `GITHUB_EVENT_PATH`, `GITHUB_REPOSITORY`, `pull-requests: write`, and `issues: write`.  
+• GitLab requires `GITLAB_TOKEN` with `api` scope, plus `CI_PROJECT_ID`, `CI_MERGE_REQUEST_IID`, and `CI_API_V4_URL`.
+
+### OpenAI key not set
+
+If `OPENAI_API_KEY` is missing, SecureMR falls back to the bundled local llama-cpp model instead of disabling AI entirely.
 
 ---
 

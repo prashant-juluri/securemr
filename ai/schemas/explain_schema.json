@@ -3,11 +3,11 @@
   "properties": {
     "vulnerability_type": { "type": "string" },
     "explanation": { "type": "string" },
-    "exploit_scenario": { "type": "string" }
+    "impact": { "type": "string" }
   },
   "required": [
     "vulnerability_type",
     "explanation",
-    "exploit_scenario"
+    "impact"
   ]
 }

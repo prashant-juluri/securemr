@@ -159,8 +159,8 @@ jobs:
             -e GITHUB_ACTIONS=true \
             -e GITHUB_REPOSITORY=${{ github.repository }} \
             -e GITHUB_EVENT_PATH=/event.json \
-            -e GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha }} \
-            -e GITHUB_SHA=${{ github.event.pull_request.head.sha }} \
+            -e GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha || github.event.before }} \
+            -e GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }} \
             -v ${{ github.workspace }}:/target \
             -v ${{ github.event_path }}:/event.json \
             prashantjuluri/securemr:latest \
@@ -172,18 +172,21 @@ Notes:
 • `fetch-depth: 0` is important. Without full git history, diff detection may fall back to a full repository scan.  
 • `GITHUB_TOKEN`, `GITHUB_EVENT_PATH`, `GITHUB_REPOSITORY`, `GITHUB_BASE_SHA`, and `GITHUB_SHA` must be passed into the container explicitly. GitHub sets them for the runner, not automatically for `docker run`.  
 • PR comments require the `pull-requests: write` and `issues: write` permissions shown above.
+• `prashantjuluri/securemr:latest` is the latest published image. If you are testing unreleased changes from the SecureMR repo itself, build an image from your branch or publish a new image before expecting CI behavior to change.
 
 ---
 
 # GitHub Secrets
 
-Add the following secret:
+Recommended secret:
 
 `OPENAI_API_KEY`
 
 Location:
 
 Repository Settings → Secrets → Actions
+
+`OPENAI_API_KEY` enables OpenAI-backed analysis. If it is not set, SecureMR falls back to the bundled local llama-cpp model.
 
 GitHub also provides a default `GITHUB_TOKEN`, but you still need to pass it into the container as shown above if you want SecureMR to post PR comments.
 
@@ -197,10 +200,10 @@ GITHUB_EVENT_PATH
 GITHUB_WORKSPACE
 ```
 
-For pull request workflows, set:
+Recommended mappings:
 
-• `GITHUB_BASE_SHA` to `${{ github.event.pull_request.base.sha }}`  
-• `GITHUB_SHA` to `${{ github.event.pull_request.head.sha }}`
+• `GITHUB_BASE_SHA=${{ github.event.pull_request.base.sha || github.event.before }}`  
+• `GITHUB_SHA=${{ github.event.pull_request.head.sha || github.sha }}`
 
 ---
 
@@ -274,6 +277,7 @@ Notes:
 • `CI_COMMIT_SHA` must be passed into the container. SecureMR uses it together with `CI_MERGE_REQUEST_DIFF_BASE_SHA` to detect changed files.  
 • Merge request comments require `CI_MERGE_REQUEST_IID`, `CI_API_V4_URL`, `CI_PROJECT_ID`, and `GITLAB_TOKEN`.  
 • Push or manual pipelines can still run SecureMR, but MR comments and MR-specific diff detection only work on merge request pipelines.
+• `prashantjuluri/securemr:latest` is the latest published image. If you are testing unreleased changes from the SecureMR repo itself, build an image from your branch or publish a new image before expecting CI behavior to change.
 
 ---
 
@@ -283,12 +287,14 @@ Configure the following variables in:
 
 Project Settings → CI/CD → Variables
 
-Required variables:
+Recommended / required variables:
 
 ```
 OPENAI_API_KEY
 GITLAB_TOKEN
 ```
+
+`OPENAI_API_KEY` enables OpenAI-backed analysis. If it is not set, SecureMR falls back to the bundled local llama-cpp model.
 
 To allow SecureMR to post findings into Merge Request comments, create a GitLab access token with `api` scope and store it as `GITLAB_TOKEN`.
 

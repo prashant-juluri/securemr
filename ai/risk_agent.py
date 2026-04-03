@@ -12,6 +12,8 @@ SCHEMA_PATH = Path(__file__).parent / "schemas/risk_schema.json"
 
 class RiskAgent:
 
+    MAX_TOKENS = 256
+
     def __init__(self, llm):
 
         self.llm = llm
@@ -41,7 +43,9 @@ class RiskAgent:
 
             response = self.llm.generate(
                 prompt,
-                model=AI_MODELS["risk"]
+                model=AI_MODELS["risk"],
+                response_schema=self.schema,
+                max_tokens=self.MAX_TOKENS
             )
 
             if isinstance(response, dict):

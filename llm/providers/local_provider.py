@@ -22,6 +22,16 @@ class LocalProvider:
     def _safe_parse(self, text):
         return safe_parse(text)
 
+    def _response_format(self, response_schema):
+
+        if response_schema:
+            return {
+                "type": "json_object",
+                "schema": response_schema
+            }
+
+        return {"type": "json_object"}
+
     def _clean_text(self, text):
 
         if not isinstance(text, str):
@@ -61,10 +71,10 @@ class LocalProvider:
 
         return choice.get("text", "")
 
-    def generate(self, prompt, model=None):
+    def generate(self, prompt, model=None, response_schema=None, max_tokens=None):
 
         generation_kwargs = {
-            "max_tokens": 400,
+            "max_tokens": max_tokens or 400,
             "temperature": 0.0,
             "top_p": 0.9
         }
@@ -78,7 +88,7 @@ class LocalProvider:
             try:
                 response = self.model.create_chat_completion(
                     messages=messages,
-                    response_format={"type": "json_object"},
+                    response_format=self._response_format(response_schema),
                     **generation_kwargs
                 )
             except TypeError:

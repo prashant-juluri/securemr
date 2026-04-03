@@ -10,7 +10,7 @@ class OpenAIProvider:
 
         self.client = OpenAI(api_key=api_key)
 
-    def generate(self, prompt, model=None):
+    def generate(self, prompt, model=None, response_schema=None, max_tokens=None):
 
         model = model or DEFAULT_MODEL
 

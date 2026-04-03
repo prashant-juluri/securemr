@@ -11,6 +11,8 @@ SCHEMA_PATH = Path(__file__).parent / "schemas/explain_schema.json"
 
 class ExplainAgent:
 
+    MAX_TOKENS = 256
+
     def __init__(self, llm):
 
         self.llm = llm
@@ -39,7 +41,9 @@ class ExplainAgent:
 
             response = self.llm.generate(
                 prompt,
-                model=AI_MODELS["explain"]
+                model=AI_MODELS["explain"],
+                response_schema=self.schema,
+                max_tokens=self.MAX_TOKENS
             )
 
             if isinstance(response, dict):

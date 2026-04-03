@@ -13,6 +13,8 @@ SCHEMA_PATH = Path(__file__).parent / "schemas/fix_schema.json"
 
 class FixAgent:
 
+    MAX_TOKENS = 800
+
     def __init__(self, llm):
 
         self.llm = llm
@@ -44,7 +46,9 @@ class FixAgent:
 
             response = self.llm.generate(
                 prompt,
-                model=AI_MODELS["fix"]
+                model=AI_MODELS["fix"],
+                response_schema=self.schema,
+                max_tokens=self.MAX_TOKENS
             )
 
             #print("[SecureMR] Fix LLM raw response:", response)

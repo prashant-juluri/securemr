@@ -4,7 +4,7 @@ from pathlib import Path
 from string import Template
 
 from config import AI_MODELS
-from ai.json_utils import parse_and_validate, safe_parse
+from ai.json_utils import clean_llm_json, parse_and_validate, safe_parse
 
 
 PROMPT_PATH = Path(__file__).parent / "prompts/fix_prompt.txt"
@@ -24,6 +24,33 @@ class FixAgent:
 
         with open(SCHEMA_PATH) as f:
             self.schema = json.load(f)
+
+
+    def _fallback_fix_response(self, parsed_response):
+
+        if not isinstance(parsed_response, dict):
+            return None
+
+        raw_response = parsed_response.get("raw_response")
+
+        if not raw_response:
+            return None
+
+        if not isinstance(raw_response, str):
+            raw_response = str(raw_response)
+
+        fallback_text = clean_llm_json(raw_response).strip()
+
+        if not fallback_text:
+            return None
+
+        print("[SecureMR] FixAgent falling back to raw text fix description")
+
+        return {
+            "fix_description": fallback_text,
+            "secure_code_example": "",
+            "patch_diff": ""
+        }
 
 
     def analyze(self, finding, explanation):
@@ -57,7 +84,15 @@ class FixAgent:
             else:
                 parsed = safe_parse(response)
 
-            return parse_and_validate(parsed, self.schema)
+            result = parse_and_validate(parsed, self.schema)
+
+            if isinstance(result, dict) and result.get("error") == "invalid_json":
+                fallback = self._fallback_fix_response(result)
+
+                if fallback is not None:
+                    return fallback
+
+            return result
 
         except Exception as e:
 
